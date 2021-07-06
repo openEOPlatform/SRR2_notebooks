@@ -31,7 +31,7 @@ ndre5 = lambda b5,b7: (b7 - b5) / (b7 + b5)
 
 def compute_features(datacube, features:list):
 	dc = datacube
-	lenx = len(feats.metadata._band_dimension.bands)
+	lenx = len(datacube.metadata._band_dimension.bands)
 	nlenx = lenx
 	for i in features:
 		if i=="NDVI":
