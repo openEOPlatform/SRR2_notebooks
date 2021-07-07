@@ -1,9 +1,11 @@
-import openeo
-from openeo.processes import ProcessBuilder, array_modify, normalized_difference, drop_dimension, quantiles, sd, mean, array_apply, array_concat
+"""
+Module for calculating a list of vegetation indices from a datacube containing bands without a user having to implement callback functions
+"""
 
-# percentiles p10, p50, p90
-# std dev
-# tsteps ts0, ts1, ts5
+import openeo
+from openeo.rest.datacube import DataCube
+from openeo.processes import ProcessBuilder, array_modify, array_concat
+import numpy as np
 
 WL_B04 = 0.6646
 WL_B08 = 0.8328
@@ -28,28 +30,34 @@ ndre1 = lambda b5,b8: (b8 - b5) / (b8 + b5)
 ndre2 = lambda b6,b8: (b8 - b6) / (b8 + b6)
 ndre5 = lambda b5,b7: (b7 - b5) / (b7 + b5)
 
+indices = {
+	"NDVI": ndvi,
+	"NDMI": ndmi,
+	"NDGI": ndgi,
+	"ANIR": anir,
+	"NDRE1": ndre1,
+	"NDRE2": ndre2,
+	"NDRE5": ndre5
+}
 
-def compute_features(datacube, features:list):
-	dc = datacube
-	lenx = len(feats.metadata._band_dimension.bands)
+def _callback(x: ProcessBuilder, index_list:list, lenx:int) -> ProcessBuilder:
+	tot = x
 	nlenx = lenx
-	for i in features:
-		if i=="NDVI":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndvi(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="NDMI":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndmi(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="NDGI":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndgi(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="ANIR":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=anir(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="NDRE1":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndre1(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="NDRE2":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndre2(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		elif i=="NDRE5":
-			dc = dc.apply_dimension(dimension="bands",process=lambda x: array_modify(data=x, values=ndre5(*[x.array_element(i) for i in range(lenx)]), index=nlenx))
-		else:
-			raise NotImplementedError("The index "+i+" has not yet been implemented. PLease choose between NDVI, NDMI, NDGI, ANIR, NDRE1, NDRE2 or NDRE5")
+	for i in index_list:
+		if i not in indices.keys(): raise NotImplementedError("Index "+i+" has not been implemented.")
 		nlenx += 1
-	return dc
+		tot = array_modify(data=tot,values=indices[i](*[tot.array_element(i) for i in range(lenx)]),index=nlenx)
+	return tot
 
+
+def compute_indices(datacube:DataCube, index_list:list) -> DataCube:
+	"""
+	Computes a list of indices from a datacube
+	
+	param datacube: an instance of openeo.rest.DataCube
+	param index_list: a list of indices. The following indices are currently implemented: NDVI, NDMI, NDGI, ANIR, NDRE1, NDRE2 and NDRE5
+	return: the datacube with the indices attached as bands
+
+	"""
+	lenx = len(datacube.metadata._band_dimension.bands)
+	return datacube.apply_dimension(dimension="bands", process=lambda x: _callback(x,index_list,lenx))
