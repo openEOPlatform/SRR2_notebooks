@@ -12,13 +12,13 @@ WL_B08 = 0.8328
 WL_B11 = 1.610
 
 # source: https://git.vito.be/projects/LCLU/repos/satio/browse/satio/rsindices.py
-ndvi = lambda b4,b8: (b8 - b4) / (b8 + b4) 
-ndmi = lambda b8,b11: (b8 - b11) / (b8 + b11)
-ndgi = lambda b3,b4: (b3 - b4) / (b3 + b4)
-def anir(b4, b8, b11):
-    a = np.sqrt(np.square(WL_B08 - WL_B04) + np.square(b8 - b4))
-    b = np.sqrt(np.square(WL_B11 - WL_B08) + np.square(b11 - b8))
-    c = np.sqrt(np.square(WL_B11 - WL_B04) + np.square(b11 - b4))
+ndvi = lambda B04,B08: (B08 - B04) / (B08 + B04) 
+ndmi = lambda B08,B11: (B08 - B11) / (B08 + B11)
+ndgi = lambda B03,B04: (B03 - B04) / (B03 + B04)
+def anir(B04, B08, B11):
+    a = np.sqrt(np.square(WL_B08 - WL_B04) + np.square(B08 - B04))
+    b = np.sqrt(np.square(WL_B11 - WL_B08) + np.square(B11 - B08))
+    c = np.sqrt(np.square(WL_B11 - WL_B04) + np.square(B11 - B04))
 
     # calculate angle with NIR as reference (ANIR)
     site_length = (np.square(a) + np.square(b) - np.square(c)) / (2 * a * b)
@@ -26,9 +26,9 @@ def anir(b4, b8, b11):
     site_length[site_length > 1] = 1
 
     return 1. / np.pi * np.arccos(site_length)
-ndre1 = lambda b5,b8: (b8 - b5) / (b8 + b5)
-ndre2 = lambda b6,b8: (b8 - b6) / (b8 + b6)
-ndre5 = lambda b5,b7: (b7 - b5) / (b7 + b5)
+ndre1 = lambda B05,B08: (B08 - B05) / (B08 + B05)
+ndre2 = lambda B06,B08: (B08 - B06) / (B08 + B06)
+ndre5 = lambda B05,B07: (B07 - B05) / (B07 + B05)
 
 indices = {
 	"NDVI": ndvi,
@@ -40,13 +40,14 @@ indices = {
 	"NDRE5": ndre5
 }
 
-def _callback(x: ProcessBuilder, index_list:list, lenx:int) -> ProcessBuilder:
+def _callback(x: ProcessBuilder, index_list:list, datacube:DataCube) -> ProcessBuilder:
+	lenx = len(datacube.metadata._band_dimension.bands)
 	tot = x
-	nlenx = lenx
-	for i in index_list:
-		if i not in indices.keys(): raise NotImplementedError("Index "+i+" has not been implemented.")
-		nlenx += 1
-		tot = array_modify(data=tot,values=indices[i](*[tot.array_element(i) for i in range(lenx)]),index=nlenx)
+	for idx in index_list:
+		if idx not in indices.keys(): raise NotImplementedError("Index "+idx+" has not been implemented.")
+		band_indices = [datacube.metadata.get_band_index(band) for band in indices[idx].__code__.co_varnames]
+		lenx += 1
+		tot = array_modify(data=tot,values=indices[idx](*[tot.array_element(i) for i in band_indices]),index=lenx)
 	return tot
 
 
@@ -59,5 +60,4 @@ def compute_indices(datacube:DataCube, index_list:list) -> DataCube:
 	return: the datacube with the indices attached as bands
 
 	"""
-	lenx = len(datacube.metadata._band_dimension.bands)
-	return datacube.apply_dimension(dimension="bands", process=lambda x: _callback(x,index_list,lenx))
+	return datacube.apply_dimension(dimension="bands", process=lambda x: _callback(x,index_list,datacube)).rename_labels('bands', target=datacube.metadata.band_names+index_list)
