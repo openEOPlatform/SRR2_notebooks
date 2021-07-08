@@ -1,0 +1,433 @@
+{
+  "process_graph": {
+    "10": {
+      "process_id": "apply",
+      "arguments": {
+        "process": {
+          "process_graph": {
+            "1": {
+              "result": true,
+              "process_id": "gt",
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "y": 0
+              }
+            }
+          }
+        },
+        "data": {
+          "from_node": "19"
+        },
+        "context": ""
+      }
+    },
+    "11": {
+      "process_id": "load_collection",
+      "arguments": {
+        "spatial_extent": {
+          "east": 11.154046654701233,
+          "south": 46.132006481951066,
+          "north": 46.13386521930491,
+          "west": 11.151160597801208
+        },
+        "id": "S2_L2A_T32TPS",
+        "bands": [
+          "B04_10m",
+          "B02_10m"
+        ],
+        "properties": {},
+        "temporal_extent": [
+          "2016-09-01T00:00:00Z",
+          "2018-09-01T23:59:59Z"
+        ]
+      }
+    },
+    "13": {
+      "process_id": "mask",
+      "arguments": {
+        "data": {},
+        "mask": {
+          "from_node": "10"
+        }
+      }
+    },
+    "19": {
+      "process_id": "resample_cube_temporal",
+      "arguments": {
+        "data": {
+          "from_node": "loadcollection1"
+        },
+        "method": "nearest",
+        "target": {
+          "from_node": "11"
+        }
+      }
+    },
+    "22": {
+      "process_id": "apply",
+      "arguments": {
+        "process": {
+          "process_graph": {
+            "1": {
+              "result": true,
+              "process_id": "clip",
+              "arguments": {
+                "min": 0,
+                "max": 600,
+                "x": {
+                  "from_parameter": "x"
+                }
+              }
+            }
+          }
+        },
+        "data": {
+          "from_node": "13"
+        },
+        "context": ""
+      }
+    },
+    "23": {
+      "process_id": "predict_curve",
+      "arguments": {
+        "data": {
+          "from_node": "22"
+        },
+        "function": {
+          "process_graph": {
+            "6lw05bkrw": {
+              "process_id": "sin",
+              "arguments": {
+                "x": {
+                  "from_node": "bvmn4kpmp"
+                }
+              }
+            },
+            "3mlkowiei": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": {
+                  "from_node": "gdtbgtuga"
+                },
+                "y": {
+                  "from_node": "6lw05bkrw"
+                }
+              }
+            },
+            "b6xvzbzzu": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": {
+                  "from_node": "lhle6zhbs"
+                },
+                "y": {
+                  "from_parameter": "x"
+                }
+              }
+            },
+            "lhle6zhbs": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "xlvludp52"
+                },
+                "y": 31557600
+              }
+            },
+            "avbce9bsn": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 0
+              }
+            },
+            "xlvludp52": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": 2,
+                "y": {
+                  "from_node": "yn35xe0dv"
+                }
+              }
+            },
+            "bf91wdpfm": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": {
+                  "from_node": "9u1th2y7s"
+                },
+                "y": {
+                  "from_node": "o1hqxg6zy"
+                }
+              }
+            },
+            "yn35xe0dv": {
+              "process_id": "pi",
+              "arguments": {}
+            },
+            "jkwmntgs9": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "yacyqslpk"
+                },
+                "y": 31557600
+              }
+            },
+            "w3t4ee2dc": {
+              "result": true,
+              "process_id": "add",
+              "arguments": {
+                "x": {
+                  "from_node": "pjq0xlzdd"
+                },
+                "y": {
+                  "from_node": "3mlkowiei"
+                }
+              }
+            },
+            "pjq0xlzdd": {
+              "process_id": "add",
+              "arguments": {
+                "x": {
+                  "from_node": "avbce9bsn"
+                },
+                "y": {
+                  "from_node": "bf91wdpfm"
+                }
+              }
+            },
+            "bvmn4kpmp": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": {
+                  "from_node": "jkwmntgs9"
+                },
+                "y": {
+                  "from_parameter": "x"
+                }
+              }
+            },
+            "9u1th2y7s": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 1
+              }
+            },
+            "o1hqxg6zy": {
+              "process_id": "cos",
+              "arguments": {
+                "x": {
+                  "from_node": "b6xvzbzzu"
+                }
+              }
+            },
+            "gdtbgtuga": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 2
+              }
+            },
+            "yacyqslpk": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": 2,
+                "y": {
+                  "from_node": "05070e1r8"
+                }
+              }
+            },
+            "05070e1r8": {
+              "process_id": "pi",
+              "arguments": {}
+            }
+          }
+        },
+        "parameters": {
+          "from_node": "load_result1"
+        },
+        "dimension": "t",
+        "labels": []
+      }
+    },
+    "24": {
+      "process_id": "merge_cubes",
+      "arguments": {
+        "cube1": {
+          "from_node": "22"
+        },
+        "cube2": {
+          "from_node": "23"
+        },
+        "context": "",
+        "overlap_resolver": {
+          "process_graph": {
+            "1": {
+              "process_id": "subtract",
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "y": {
+                  "from_parameter": "y"
+                }
+              },
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "25": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "24"
+        },
+        "context": "",
+        "reducer": {
+          "process_graph": {
+            "2l5ht9kef": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B02_10m"
+              }
+            },
+            "nuhycgfpp": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B04_10m"
+              }
+            },
+            "4dm9f1kng": {
+              "process_id": "power",
+              "arguments": {
+                "base": {
+                  "from_node": "2l5ht9kef"
+                },
+                "p": 2
+              }
+            },
+            "nwj77idkz": {
+              "process_id": "power",
+              "arguments": {
+                "base": {
+                  "from_node": "nuhycgfpp"
+                },
+                "p": 2
+              }
+            },
+            "ag48wh5lj": {
+              "process_id": "add",
+              "arguments": {
+                "x": {
+                  "from_node": "nwj77idkz"
+                },
+                "y": {
+                  "from_node": "4dm9f1kng"
+                }
+              }
+            },
+            "0wq56ibe9": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "ag48wh5lj"
+                },
+                "y": 2
+              }
+            },
+            "2ku67h4dx": {
+              "process_id": "power",
+              "arguments": {
+                "base": {
+                  "from_node": "0wq56ibe9"
+                },
+                "p": 0.5
+              },
+              "result": true
+            }
+          }
+        },
+        "dimension": "bands"
+      }
+    },
+    "26": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "25"
+        },
+        "context": "",
+        "reducer": {
+          "process_graph": {
+            "1": {
+              "process_id": "sd",
+              "arguments": {
+                "data": {
+                  "from_parameter": "x"
+                }
+              },
+              "result": true
+            }
+          }
+        },
+        "dimension": "t"
+      }
+    },
+    "load_result1": {
+      "process_id": "load_result",
+      "arguments": {
+        "id": {
+          "job_id": "3f46710e-d447-435a-bd88-bb7865df47bb"
+        }
+      }
+    },
+    "loadcollection1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "spatial_extent": {
+          "east": 11.154046654701233,
+          "south": 46.132006481951066,
+          "north": 46.13386521930491,
+          "west": 11.151160597801208
+        },
+        "temporal_extent": [
+          "2016-09-01T00:00:00Z",
+          "2018-09-01T23:59:59Z"
+        ],
+        "id": "s2cloudless_alps",
+        "bands": [
+          "CLOUD_10m"
+        ],
+        "properties": {}
+      }
+    },
+    "saveresult1": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "26"
+        },
+        "format": "NETCDF"
+      },
+      "result": true
+    }
+  }
+}
