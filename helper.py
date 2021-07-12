@@ -93,9 +93,9 @@ def test_vegindex_calculator_ndvi(auth_connection: Connection, index, bands, exp
 
     s2_masked = s2.process("mask_scl_dilation", data=s2, scl_band_name="SCL").filter_bands(bands)
     feats = compute_indices(s2_masked, [index])
-    feats.download("./tmp/feats.tif", format="GTiff")
+    feats.download("./data/feats.tif", format="GTiff")
 
-    with rasterio.open('./tmp/feats.tif') as dataset:
+    with rasterio.open('./data/feats.tif') as dataset:
         result = dataset.read(3)
 
     np.testing.assert_almost_equal(actual=result, desired=expected, decimal=7)
