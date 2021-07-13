@@ -26,20 +26,23 @@
     "11": {
       "process_id": "load_collection",
       "arguments": {
+        "temporal_extent": [
+          "2016-09-01T00:00:00Z",
+          "2018-09-01T23:59:59Z"
+        ],
         "spatial_extent": {
-          "east": 11.154046654701233,
-          "south": 46.132006481951066,
-          "north": 46.13386521930491,
-          "west": 11.151160597801208
+          "east": 11.535799026489256,
+          "south": 46.29756750209694,
+          "north": 46.394735677983675,
+          "west": 11.3679141998291
         },
         "id": "S2_L2A_T32TPS",
         "bands": [
           "B04_10m",
-		  "B02_10m"
-        ],
-				"temporal_extent": [
-          "2016-09-01T00:00:00Z",
-          "2018-09-01T23:59:59Z"
+          "B02_10m",
+          "B08_10m",
+          "B03_10m",
+          "B8A_20m"
         ],
         "properties": {}
       }
@@ -50,6 +53,7 @@
         "data": {
           "from_node": "11"
         },
+        "replacement": 0,
         "mask": {
           "from_node": "10"
         }
@@ -234,7 +238,9 @@
           "from_node": "loadcollection1"
         },
         "method": "nearest",
-        "target": {}
+        "target": {
+          "from_node": "11"
+        }
       }
     },
     "22": {
@@ -247,7 +253,7 @@
               "process_id": "clip",
               "arguments": {
                 "min": 0,
-                "max": 600,
+                "max": 4000,
                 "x": {
                   "from_parameter": "x"
                 }
@@ -264,16 +270,16 @@
     "loadcollection1": {
       "process_id": "load_collection",
       "arguments": {
-        "spatial_extent": {
-          "east": 11.154046654701233,
-          "south": 46.132006481951066,
-          "north": 46.13386521930491,
-          "west": 11.151160597801208
-        },
-		"temporal_extent": [
+        "temporal_extent": [
           "2016-09-01T00:00:00Z",
           "2018-09-01T23:59:59Z"
         ],
+        "spatial_extent": {
+          "east": 11.535799026489256,
+          "south": 46.29756750209694,
+          "north": 46.394735677983675,
+          "west": 11.3679141998291
+        },
         "id": "s2cloudless_alps",
         "bands": [
           "CLOUD_10m"
@@ -282,14 +288,14 @@
       }
     },
     "saveresult1": {
+      "result": true,
       "process_id": "save_result",
       "arguments": {
         "data": {
           "from_node": "18"
         },
         "format": "NETCDF"
-      },
-      "result": true
+      }
     }
   }
 }
