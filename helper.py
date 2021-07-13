@@ -4,7 +4,8 @@ Module for calculating a list of vegetation indices from a datacube containing b
 
 from openeo import Connection
 from openeo.rest.datacube import DataCube
-from openeo.processes import ProcessBuilder, array_modify, power, sqrt, if_, multiply, arccos
+from openeo.processes import ProcessBuilder, array_modify, array_concat, array_apply, power, sqrt, clip, if_, multiply, divide, arccos, linear_scale_range
+
 import numpy as np
 import pytest, rasterio
 
@@ -56,7 +57,7 @@ def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube) -> Proces
         band_indices = [datacube.metadata.get_band_index(band) for band in
                         indices[idx].__code__.co_varnames[:indices[idx].__code__.co_argcount]]
         lenx += 1
-        tot = array_modify(data=tot, values=indices[idx](*[tot.array_element(i) for i in band_indices]), index=lenx)
+        tot = array_modify(data=tot, values=2000*indices[idx](*[tot.array_element(i) for i in band_indices]), index=lenx)
     return tot
 
 
@@ -99,3 +100,4 @@ def test_vegindex_calculator_ndvi(auth_connection: Connection, index, bands, exp
         result = dataset.read(3)
 
     np.testing.assert_almost_equal(actual=result, desired=expected, decimal=7)
+
