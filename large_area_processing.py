@@ -42,7 +42,7 @@ def process_callback(con=None):
     return corn
 
 
-def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=None, frm="GTiff", minimum_area=0.5):
+def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=None, frm="GTiff", minimum_area=0.5, parallel_jobs=2):
     """
     TODO: maak iets waarmee het asynchroon kan draaien?
     TODO: callback functie maken ipv hier in dit script draaien
@@ -78,7 +78,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
     for geom in geoms.geometry:
         grid = grid_tot.cx[geom.bounds[0]:geom.bounds[2], geom.bounds[1]:geom.bounds[3]].reset_index()
         print("The bounding box of the geometry you selected contains a total of "+str(len(grid))+" grid tiles. Not all of these will actually overlap with the specific geometry shape you supplied")
-        rnges = [(i*3, i*3+3) for i in range(len(grid)//3)]+[(len(grid)-1,len(grid)-1+len(grid)%3)]
+        rnges = [(i*parallel_jobs, i*parallel_jobs+parallel_jobs) for i in range(len(grid)//parallel_jobs)]+[(len(grid)-1,len(grid)-1+len(grid)%parallel_jobs)]
         for rng in rnges:
             count = 0
             for i in range(*rng):
@@ -98,11 +98,11 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                     cube = callback(s2)
                     s2_res = cube.save_result(format=frm)
                     job = s2_res.send_job(job_options = {
-                                                #"driver-memory": driverMemory,
-                                                #"driver-memoryOverhead": driverMemoryOverhead,
-                                                #"driver-cores": "2",
+                                                "driver-memory": "2G",
+                                                "driver-memoryOverhead": "1G",
+                                                "driver-cores": "2",
                                                 #"executor-memory": "1G",
-                                                #"executor-memoryOverhead": "1G",
+                                                "executor-memoryOverhead": "1G",
                                                 #"executor-cores": "1",
                                                 #"queue": "lowlatency"
                                                 "max-executors":"100"
@@ -132,7 +132,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
 year = 2020
 connection = openeo.connect("https://openeo.vito.be")
 # connection.authenticate_oidc()
-connection.authenticate_basic("bart","bart123")
+connection.authenticate_basic("XXX","XXX")
 geom = 'UC3_resources/processing_area.geojson'
-tmp_ext = [str(year-1)+"-10-01", str(year+1)+"-04-01"]
+tmp_ext = [str(year-1)+"-11-01", str(year+1)+"-02-01"]
 process_area(con=connection, area=geom, callback=process_callback, tmp_ext=tmp_ext, folder_path="./data/large_areas/")
