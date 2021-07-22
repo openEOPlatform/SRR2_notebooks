@@ -5,6 +5,16 @@ import time
 from helper import compute_indices
 from openeo.processes import ProcessBuilder, if_
 
+temporal_partition_options = {
+        "indexreduction": 0,
+        "temporalresolution": "None",
+        "tilesize": 256
+    }
+default_partition_options = {
+    "tilesize": 256
+}
+
+
 def _callback(x: ProcessBuilder, bandnames) -> ProcessBuilder:
     ndvi_apr = x.array_element(bandnames.index("NDVI_apr"))
     ndvi_may = x.array_element(bandnames.index("NDVI_may"))
@@ -30,7 +40,8 @@ def _callback(x: ProcessBuilder, bandnames) -> ProcessBuilder:
 def process_callback(con=None):
     s2_masked = con.process("mask_scl_dilation", data=con, scl_band_name="SCL").filter_bands(["B04","B08", "B11"])
     ndvi_comp = compute_indices(s2_masked, ["NDVI"])
-    agg_month = ndvi_comp.aggregate_temporal_period(period="month", reducer="median")
+    ndvi_comp_byte = ndvi_comp.linear_scale_range(1,2000,0,254)
+    agg_month = ndvi_comp_byte.aggregate_temporal_period(period="month", reducer="median")
     ndvi_month = agg_month.apply_dimension(dimension="t", process="array_interpolate_linear").filter_temporal([str(year)+"-01-01", str(year)+"-12-31"])
     all_bands = ndvi_month.apply_dimension(dimension='t', target_dimension='bands', process=lambda x: x*1)
     
@@ -42,7 +53,7 @@ def process_callback(con=None):
     return corn
 
 
-def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=None, frm="GTiff", minimum_area=0.5, parallel_jobs=2):
+def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=None, frm="GTiff", minimum_area=0.5, parallel_jobs=1):
     """
     TODO: maak iets waarmee het asynchroon kan draaien?
     TODO: callback functie maken ipv hier in dit script draaien
@@ -95,15 +106,16 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                                                     spatial_extent=bbox_dict,
                                                     temporal_extent=tmp_ext, 
                                                     bands=["B04","B08","B11","SCL"])
+                    s2._pg.arguments['featureflags'] = temporal_partition_options
                     cube = callback(s2)
                     s2_res = cube.save_result(format=frm)
                     job = s2_res.send_job(job_options = {
                                                 "driver-memory": "2G",
                                                 "driver-memoryOverhead": "1G",
                                                 "driver-cores": "2",
-                                                #"executor-memory": "1G",
+                                                "executor-memory": "2G",
                                                 "executor-memoryOverhead": "1G",
-                                                #"executor-cores": "1",
+                                                "executor-cores": "3",
                                                 #"queue": "lowlatency"
                                                 "max-executors":"100"
                                             })
@@ -119,10 +131,12 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                     still_running = False
                     for i in list(range(-count,0)):
                         cur_job = status_df.iloc[i]
-                        results = cur_job.get_results()
+                        cur_job_openeo = con.job(cur_job['id'])
+                        results = cur_job_openeo.get_results()
                         results.download_file(folder_path+name+ext)
                 elif last_job["status"] == "error":
-                    raise Error("The backend threw an error.")
+                    print("Encountered a failed job: " + last_job)
+                    #raise Error("The backend threw an error.")
                 else:
                     job = connection.job(last_job["id"])
                     status_df.iloc[-1]["status"] = job.describe_job()["status"]
