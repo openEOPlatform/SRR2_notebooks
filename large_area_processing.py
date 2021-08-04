@@ -15,6 +15,21 @@ default_partition_options = {
 }
 
 
+def read_or_create_csv(grid, index):
+    try:
+        status_df = pd.read_csv(csv_path.format(index), index_col=0)
+    except FileNotFoundError:
+        status_df = pd.DataFrame(columns=["name", "status", "id", "cpu", "memory"])
+
+        for i in range(len(grid)):
+            status_df = status_df.append(
+                {"name": grid.name[i], "status": "pending", "id": None, "cpu": None, "memory": None}, ignore_index=True)
+
+        status_df.to_csv(csv_path.format(index))
+
+    return status_df
+
+
 def _callback(x: ProcessBuilder, bandnames) -> ProcessBuilder:
     ndvi_apr = x.array_element(bandnames.index("NDVI_apr"))
     ndvi_may = x.array_element(bandnames.index("NDVI_may"))
@@ -44,7 +59,7 @@ def process_callback(con=None):
     agg_month = ndvi_comp_byte.aggregate_temporal_period(period="month", reducer="median")
     ndvi_month = agg_month.apply_dimension(dimension="t", process="array_interpolate_linear").filter_temporal([str(year)+"-01-01", str(year)+"-12-31"])
     all_bands = ndvi_month.apply_dimension(dimension='t', target_dimension='bands', process=lambda x: x*1)
-    
+
     bandnames2 = [band + "_" + stat for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] for band in all_bands.metadata.band_names]
     bandnames = [band + "_" + stat for band in all_bands.metadata.band_names for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]]
     all_bands = all_bands.rename_labels('bands', target=bandnames)
@@ -76,71 +91,102 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
     else:
         raise NotImplementedError("This format is not yet implemented")
     geoms = gpd.read_file(area)
-    
-    
-    #selective reading, requires geopandas>=0.7.0
-    grid_tot = gpd.read_file("https://s3.eu-central-1.amazonaws.com/sh-batch-grids/tiling-grid-2.zip",mask=geoms)
-    intersection = grid_tot.geometry.intersection(geoms.iloc[0].geometry)
-    
-    #filter on area 
-    grid_tot = grid_tot[intersection.area>minimum_area]
 
-    status_df = pd.DataFrame(columns=["name","status","id"])
-    for geom in geoms.geometry:
-        grid = grid_tot.cx[geom.bounds[0]:geom.bounds[2], geom.bounds[1]:geom.bounds[3]].reset_index()
-        print("The bounding box of the geometry you selected contains a total of "+str(len(grid))+" grid tiles. Not all of these will actually overlap with the specific geometry shape you supplied")
-        rnges = [(i*parallel_jobs, i*parallel_jobs+parallel_jobs) for i in range(len(grid)//parallel_jobs)]+[(len(grid)-1,len(grid)-1+len(grid)%parallel_jobs)]
-        for rng in rnges:
-            count = 0
-            for i in range(*rng):
-                tile = grid.geometry[i]
-                name = grid.name[i]
-                if geom.intersects(tile):
-                    count += 1
-                    print("Starting job... current grid tile: "+str(i))
-                    bbox = tile.bounds
-                    lst = ('west','south','east','north')
-                    bbox_dict = dict(zip(lst,bbox))
+    for index, geom in enumerate(geoms.geometry):
+        # selective reading, requires geopandas>=0.7.0
+        grid_tot = gpd.read_file("https://s3.eu-central-1.amazonaws.com/sh-batch-grids/tiling-grid-2.zip", mask=geoms)
+        intersection = grid_tot.geometry.intersection(geom)
 
-                    s2 = con.load_collection("TERRASCOPE_S2_TOC_V2", 
-                                                    spatial_extent=bbox_dict,
-                                                    temporal_extent=tmp_ext, 
-                                                    bands=["B04","B08","B11","SCL"])
-                    s2._pg.arguments['featureflags'] = temporal_partition_options
-                    cube = callback(s2)
-                    s2_res = cube.save_result(format=frm)
-                    job = s2_res.send_job(job_options = {
-                                                "driver-memory": "2G",
-                                                "driver-memoryOverhead": "1G",
-                                                "driver-cores": "2",
-                                                "executor-memory": "2G",
-                                                "executor-memoryOverhead": "1G",
-                                                "executor-cores": "3",
-                                                #"queue": "lowlatency"
-                                                "max-executors":"100"
-                                            })
-                    status_df = status_df.append({"name": name, "status": job.describe_job()["status"], "id": job.describe_job()["id"]},ignore_index=True)
-                    status_df.to_csv("./data/uc3_job_status.csv")
-                    job.start_job()
-            still_running = True
-            while(count != 0 and still_running):
-                last_job = status_df.iloc[-1]
-                print(time.strftime('%Y-%m-%dT%H:%M:%S',time.localtime())+"\tCurrent status of job "+last_job["id"]+" is : "+last_job["status"])
-                if last_job["status"] == "finished":
-                    print("Three jobs have finished! Starting to download...")
-                    still_running = False
-                    for i in list(range(-count,0)):
-                        cur_job = status_df.iloc[i]
-                        cur_job_openeo = con.job(cur_job['id'])
-                        results = cur_job_openeo.get_results()
-                        results.download_file(folder_path+name+ext)
-                elif last_job["status"] == "error":
-                    print("Encountered a failed job: " + last_job)
-                    #raise Error("The backend threw an error.")
-                else:
-                    job = connection.job(last_job["id"])
-                    status_df.iloc[-1]["status"] = job.describe_job()["status"]
-                    time.sleep(45)
+        # filter on area
+        grid_tot = grid_tot[intersection.area > minimum_area]
+
+        bounds = geom.bounds
+        grid = grid_tot.cx[bounds[0]:bounds[2], bounds[1]:bounds[3]].reset_index()
+        print("The bounding box of the geometry you selected contains a total of " + str(
+            len(grid)) + " grid tiles. Not all of these will actually overlap with the specific geometry shape you supplied")
+
+        status_df = read_or_create_csv(grid, index)
+
+        not_finished = len(status_df[status_df["status"] != "finished"])
+        downloaded_results = []
+        printed_errors = []
+
+        while not_finished:
+            def running_jobs():
+                return status_df.loc[(status_df["status"] == "queued") | (status_df["status"] == "running")].index
+
+            def update_statuses():
+                for i in running_jobs():
+                    job_id = status_df.loc[i, 'id']
+                    job = con.job(job_id).describe_job()
+                    status_df.loc[i, "status"] = job["status"]
+                    status_df.loc[i, "cpu"] = f"{job['usage']['cpu']['value']} {job['usage']['cpu']['unit']}"
+                    status_df.loc[i, "memory"] = f"{job['usage']['memory']['value']} {job['usage']['memory']['unit']}"
+                    print(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime()) + "\tCurrent status of job " + job_id
+                          + " is : " + job["status"])
+
+            def start_jobs(nb_jobs):
+                pending_jobs = status_df[status_df["status"] == "pending"].index
+                for i in range(min(len(pending_jobs), nb_jobs)):
+                    tile = grid.geometry[pending_jobs[i]]
+                    if geom.intersects(tile):
+                        print("Starting job... current grid tile: " + str(pending_jobs[i]))
+                        bbox = tile.bounds
+                        lst = ('west', 'south', 'east', 'north')
+                        bbox_dict = dict(zip(lst, bbox))
+
+                        s2 = con.load_collection("TERRASCOPE_S2_TOC_V2",
+                                                 spatial_extent=bbox_dict,
+                                                 temporal_extent=tmp_ext,
+                                                 bands=["B04", "B08", "B11", "SCL"])
+                        s2._pg.arguments['featureflags'] = temporal_partition_options
+                        cube = callback(s2)
+                        s2_res = cube.save_result(format=frm)
+                        job = s2_res.send_job(job_options={
+                            "driver-memory": "2G",
+                            "driver-memoryOverhead": "1G",
+                            "driver-cores": "2",
+                            "executor-memory": "2G",
+                            "executor-memoryOverhead": "1G",
+                            "executor-cores": "3",
+                            # "queue": "lowlatency"
+                            "max-executors": "100"
+                        })
+                        job.start_job()
+                        status_df.loc[pending_jobs[i], "status"] = job.describe_job()["status"]
+                        status_df.loc[pending_jobs[i], "id"] = job.describe_job()["id"]
+                    else:
+                        status_df.loc[pending_jobs[i], "status"] = "finished"
+
+            def download_results(downloaded_results):
+                finished_jobs = status_df[status_df["status"] == "finished"].index
+                for i in finished_jobs:
+                    if i not in downloaded_results:
+                        downloaded_results += [i]
+                        job_id = status_df.loc[i, 'id']
+                        job = con.job(job_id)
+                        print("Finished job: {}, Starting to download...".format(job_id))
+                        results = job.get_results()
+                        results.download_file(folder_path + grid.name[i] + ext)
+
+            def print_errors(printed_errors):
+                error_jobs = status_df[status_df["status"] == "error"].index
+                for i in error_jobs:
+                    if i not in printed_errors:
+                        printed_errors += [i]
+                        print("Encountered a failed job: " + status_df.loc[i, 'id'])
+
+            update_statuses()
+            start_jobs(parallel_jobs - len(running_jobs()))
+            download_results(downloaded_results)
+            print_errors(printed_errors)
+
+            not_finished = len(status_df[status_df["status"] != "finished"])
+            print("Jobs not finished: " + str(not_finished))
+
+            status_df.to_csv(csv_path.format(index))
+
+            time.sleep(45)
 
 
 year = 2020
@@ -148,5 +194,6 @@ connection = openeo.connect("https://openeo.vito.be")
 # connection.authenticate_oidc()
 connection.authenticate_basic("XXX","XXX")
 geom = 'UC3_resources/processing_area.geojson'
+csv_path = "./data/uc3_job_status_{}.csv"
 tmp_ext = [str(year-1)+"-11-01", str(year+1)+"-02-01"]
 process_area(con=connection, area=geom, callback=process_callback, tmp_ext=tmp_ext, folder_path="./data/large_areas/")
