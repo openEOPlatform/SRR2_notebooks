@@ -4,6 +4,7 @@ import pandas as pd
 import time
 from helper import compute_indices
 from openeo.processes import ProcessBuilder, if_
+from openeo.util import deep_get
 
 temporal_partition_options = {
         "indexreduction": 0,
@@ -19,11 +20,11 @@ def read_or_create_csv(grid, index):
     try:
         status_df = pd.read_csv(csv_path.format(index), index_col=0)
     except FileNotFoundError:
-        status_df = pd.DataFrame(columns=["name", "status", "id", "cpu", "memory"])
+        status_df = pd.DataFrame(columns=["name", "status", "id", "cpu", "memory", "duration"])
 
         for i in range(len(grid)):
             status_df = status_df.append(
-                {"name": grid.name[i], "status": "pending", "id": None, "cpu": None, "memory": None}, ignore_index=True)
+                {"name": grid.name[i], "status": "pending", "id": None, "cpu": None, "memory": None, "duration": None}, ignore_index=True)
 
         status_df.to_csv(csv_path.format(index))
 
@@ -128,12 +129,18 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                 return status_df.loc[(status_df["status"] == "queued") | (status_df["status"] == "running")].index
 
             def update_statuses():
+                default_usage = {
+                    'cpu':{'value':0, 'unit':''},
+                    'memory':{'value':0, 'unit':''}
+                }
                 for i in running_jobs():
                     job_id = status_df.loc[i, 'id']
                     job = con.job(job_id).describe_job()
+                    usage = job.get('usage',default_usage)
                     status_df.loc[i, "status"] = job["status"]
-                    status_df.loc[i, "cpu"] = f"{job['usage']['cpu']['value']} {job['usage']['cpu']['unit']}"
-                    status_df.loc[i, "memory"] = f"{job['usage']['memory']['value']} {job['usage']['memory']['unit']}"
+                    status_df.loc[i, "cpu"] = f"{deep_get(usage,'cpu','value',default=0)} {deep_get(usage,'cpu','unit',default='')}"
+                    status_df.loc[i, "memory"] = f"{deep_get(usage,'memory','value',default=0)} {deep_get(usage,'memory','unit',default='')}"
+                    status_df.loc[i, "duration"] = deep_get(usage,'duration','value',default=0)
                     print(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime()) + "\tCurrent status of job " + job_id
                           + " is : " + job["status"])
 
@@ -158,7 +165,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                             "executor-memoryOverhead": "1G",
                             "executor-cores": "3",
                             # "queue": "lowlatency"
-                            "max-executors": "70"
+                            "max-executors": "90"
                         })
                         job.start_job()
                         status_df.loc[pending_jobs[i], "status"] = job.describe_job()["status"]
@@ -190,7 +197,10 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
             print_errors(printed_errors)
 
             not_finished = len(status_df[status_df["status"] != "finished"])
+            average_duration = status_df.duration.mean()
+            time_left = not_finished * average_duration / parallel_jobs
             print("Jobs not finished: " + str(not_finished))
+            print("Average duration: " + str(average_duration) + " time left: " + str(time_left) + " seconds")
 
             status_df.to_csv(csv_path.format(index))
 
@@ -204,4 +214,4 @@ connection.authenticate_basic("driesj","driesj123")
 geom = 'UC3_resources/processing_area.geojson'
 csv_path = "./data/uc3_job_status_{}.csv"
 tmp_ext = [str(year-1)+"-11-01", str(year+1)+"-02-01"]
-process_area(con=connection, area=geom, callback=sentinel2_stratification, tmp_ext=tmp_ext, folder_path="./data/large_areas/", minimum_area=0.7, parallel_jobs=3)
+process_area(con=connection, area=geom, callback=sentinel2_stratification, tmp_ext=tmp_ext, folder_path="./data/large_areas/", minimum_area=0.7, parallel_jobs=2)
