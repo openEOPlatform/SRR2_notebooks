@@ -30,42 +30,53 @@ def read_or_create_csv(grid, index):
     return status_df
 
 
-def _callback(x: ProcessBuilder, bandnames) -> ProcessBuilder:
-    ndvi_apr = x.array_element(bandnames.index("NDVI_apr"))
-    ndvi_may = x.array_element(bandnames.index("NDVI_may"))
-    ndvi_sep = x.array_element(bandnames.index("NDVI_sep"))
-    ndvi_nov = x.array_element(bandnames.index("NDVI_nov"))
 
-    nir_mar = x.array_element(bandnames.index("B08_mar"))
-    nir_may = x.array_element(bandnames.index("B08_may"))
-    swir_mar = x.array_element(bandnames.index("B11_mar"))
-    swir_may = x.array_element(bandnames.index("B11_may"))
-    
-    corn_greenup = if_(ndvi_apr.lt(ndvi_may),1,0)
-    corn_harvest = if_(ndvi_sep.gt(ndvi_nov),1,0)
-    
-    corn_sen_p1 = if_((nir_mar).gt(swir_may),1,0)
-    corn_sen_p2 = if_((swir_mar).gt(nir_may),1,0)
-
-    corn_total = corn_greenup + corn_harvest + corn_sen_p1 + corn_sen_p2
-    corn_total_fin = corn_total.gt(2)
-    return corn_total_fin
-
-
-def process_callback(con=None):
-    s2_masked = con.process("mask_scl_dilation", data=con, scl_band_name="SCL").filter_bands(["B04","B08", "B11"])
+def sentinel2_stratification(bbox_dict, con=None):
+    s2 = con.load_collection("TERRASCOPE_S2_TOC_V2",
+                                                 spatial_extent=bbox_dict,
+                                                 temporal_extent=tmp_ext,
+                                                 bands=["B04", "B08", "B11", "SCL"])
+    s2._pg.arguments['featureflags'] = temporal_partition_options
+        
+    s2_masked = s2.process("mask_scl_dilation", data=s2, scl_band_name="SCL").filter_bands(["B04","B08", "B11"])
     ndvi_comp = compute_indices(s2_masked, ["NDVI"])
-    ndvi_comp_byte = ndvi_comp.linear_scale_range(1,2000,0,254)
-    agg_month = ndvi_comp_byte.aggregate_temporal_period(period="month", reducer="median")
+    ndvi_comp_byte = ndvi_comp.linear_scale_range(1,2000,0,250)
+    
+    agg_month = ndvi_comp_byte.aggregate_temporal_period(period="month", reducer="mean")
     ndvi_month = agg_month.apply_dimension(dimension="t", process="array_interpolate_linear").filter_temporal([str(year)+"-01-01", str(year)+"-12-31"])
+    
     all_bands = ndvi_month.apply_dimension(dimension='t', target_dimension='bands', process=lambda x: x*1)
-
     bandnames2 = [band + "_" + stat for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] for band in all_bands.metadata.band_names]
     bandnames = [band + "_" + stat for band in all_bands.metadata.band_names for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]]
     all_bands = all_bands.rename_labels('bands', target=bandnames)
 
-    corn = all_bands.reduce_dimension(dimension="bands", reducer=lambda x: _callback(x,bandnames))
-    return corn
+    ndvi_apr = all_bands.band("NDVI_apr")
+    ndvi_may = all_bands.band("NDVI_may")
+    ndvi_jun = all_bands.band("NDVI_jun")
+    ndvi_jul = all_bands.band("NDVI_jul")
+    ndvi_aug = all_bands.band("NDVI_aug")
+    ndvi_sep = all_bands.band("NDVI_sep")
+    ndvi_oct = all_bands.band("NDVI_oct")
+    ndvi_nov = all_bands.band("NDVI_nov")
+
+    nir_mar = all_bands.band("B08_mar")
+    nir_may = all_bands.band("B08_may")
+    nir_jun = all_bands.band("B08_jun")
+    nir_oct = all_bands.band("B08_oct")
+    swir_mar = all_bands.band("B11_mar")
+    swir_may = all_bands.band("B11_may")
+    swir_oct = all_bands.band("B11_oct")
+
+    ## Rule for corn is not in line with experiment for 2019, use ndvi_may < ndvi_jun
+    corn = (((ndvi_may < ndvi_jun) + (ndvi_sep > ndvi_nov) + (nir_mar > swir_may) + (swir_mar > nir_may)) == 4)*1
+    barley = (((ndvi_apr < ndvi_may) + (ndvi_jul < ndvi_jun)) == 2)*1 ## barley has very narrow and early NDVI 
+    sugarbeet = (((ndvi_may < 0.6*ndvi_jun) + ((ndvi_jun+ndvi_jul+ndvi_aug+ndvi_sep)/4 > 0.7))==2)*1 #4 month period of high NDVI
+    potato = ((((ndvi_jun/ndvi_may) > 2) + (ndvi_sep < ndvi_jul) + (ndvi_nov > (ndvi_sep + ndvi_oct)/2) + ((swir_may / nir_may) > 0.8) + ((nir_jun / nir_may) > 1.5)) == 5)*1
+    soy = ((((ndvi_may / ndvi_apr) < 1.2) + ((ndvi_may / ndvi_apr) > 0.8) + (ndvi_sep < ndvi_aug) + ((nir_oct / swir_oct) < 1.1)) == 4)*1
+
+    total = 1*corn + 2*barley + 4*sugarbeet + 8*potato + 16*soy #allow multiple crops to be detected...
+    
+    return total
 
 
 def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=None, frm="GTiff", minimum_area=0.5, parallel_jobs=1):
@@ -91,10 +102,11 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
     else:
         raise NotImplementedError("This format is not yet implemented")
     geoms = gpd.read_file(area)
+    # selective reading, requires geopandas>=0.7.0
+    grid_tot = gpd.read_file("https://s3.eu-central-1.amazonaws.com/sh-batch-grids/tiling-grid-2.zip", mask=geoms)
 
     for index, geom in enumerate(geoms.geometry):
-        # selective reading, requires geopandas>=0.7.0
-        grid_tot = gpd.read_file("https://s3.eu-central-1.amazonaws.com/sh-batch-grids/tiling-grid-2.zip", mask=geoms)
+        
         intersection = grid_tot.geometry.intersection(geom)
 
         # filter on area
@@ -135,12 +147,8 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                         lst = ('west', 'south', 'east', 'north')
                         bbox_dict = dict(zip(lst, bbox))
 
-                        s2 = con.load_collection("TERRASCOPE_S2_TOC_V2",
-                                                 spatial_extent=bbox_dict,
-                                                 temporal_extent=tmp_ext,
-                                                 bands=["B04", "B08", "B11", "SCL"])
-                        s2._pg.arguments['featureflags'] = temporal_partition_options
-                        cube = callback(s2)
+                        
+                        cube = callback(bbox_dict, con)
                         s2_res = cube.save_result(format=frm)
                         job = s2_res.send_job(job_options={
                             "driver-memory": "2G",
@@ -150,7 +158,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                             "executor-memoryOverhead": "1G",
                             "executor-cores": "3",
                             # "queue": "lowlatency"
-                            "max-executors": "100"
+                            "max-executors": "70"
                         })
                         job.start_job()
                         status_df.loc[pending_jobs[i], "status"] = job.describe_job()["status"]
@@ -190,10 +198,10 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
 
 
 year = 2020
-connection = openeo.connect("https://openeo.vito.be")
+connection = openeo.connect("https://openeo-dev.vito.be")
 # connection.authenticate_oidc()
-connection.authenticate_basic("XXX","XXX")
+connection.authenticate_basic("driesj","driesj123")
 geom = 'UC3_resources/processing_area.geojson'
 csv_path = "./data/uc3_job_status_{}.csv"
 tmp_ext = [str(year-1)+"-11-01", str(year+1)+"-02-01"]
-process_area(con=connection, area=geom, callback=process_callback, tmp_ext=tmp_ext, folder_path="./data/large_areas/")
+process_area(con=connection, area=geom, callback=sentinel2_stratification, tmp_ext=tmp_ext, folder_path="./data/large_areas/", minimum_area=0.7, parallel_jobs=3)
