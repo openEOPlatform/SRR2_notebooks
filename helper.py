@@ -49,7 +49,7 @@ indices = {
 }
 
 
-def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube) -> ProcessBuilder:
+def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
     lenx = len(datacube.metadata._band_dimension.bands)
     tot = x
     for idx in index_list:
@@ -57,11 +57,11 @@ def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube) -> Proces
         band_indices = [datacube.metadata.get_band_index(band) for band in
                         indices[idx].__code__.co_varnames[:indices[idx].__code__.co_argcount]]
         lenx += 1
-        tot = array_modify(data=tot, values=2000*indices[idx](*[tot.array_element(i) for i in band_indices]), index=lenx)
+        tot = array_modify(data=tot, values=scaling_factor*indices[idx](*[tot.array_element(i) for i in band_indices]), index=lenx)
     return tot
 
 
-def compute_indices(datacube: DataCube, index_list: list) -> DataCube:
+def compute_indices(datacube: DataCube, index_list: list, scaling_factor: int) -> DataCube:
     """
     Computes a list of indices from a datacube
 
@@ -71,7 +71,7 @@ def compute_indices(datacube: DataCube, index_list: list) -> DataCube:
 
     """
     return datacube.apply_dimension(dimension="bands",
-                                    process=lambda x: _callback(x, index_list, datacube)).rename_labels('bands',
+                                    process=lambda x: _callback(x, index_list, datacube, scaling_factor)).rename_labels('bands',
                                                                                                         target=datacube.metadata.band_names + index_list)
 
 
@@ -93,7 +93,7 @@ def test_vegindex_calculator_ndvi(auth_connection: Connection, index, bands, exp
                                     bands=bands+["SCL"])
 
     s2_masked = s2.process("mask_scl_dilation", data=s2, scl_band_name="SCL").filter_bands(bands)
-    feats = compute_indices(s2_masked, [index])
+    feats = compute_indices(s2_masked, [index], 1)
     feats.download("./data/feats.tif", format="GTiff")
 
     with rasterio.open('./data/feats.tif') as dataset:
