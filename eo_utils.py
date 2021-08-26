@@ -3,6 +3,9 @@ from time import time
 import rasterio
 import numpy as np
 import openeo
+from openeo.rest.datacube import PGNode, THIS
+from openeo.processes import *
+import math
 import xarray as xr
 import rioxarray
 from ipyleaflet import (
@@ -17,13 +20,11 @@ from ipyleaflet import (
     basemaps,
     FullScreenControl
 )
+import ipywidgets as widgets
 from ipywidgets import Output, FloatSlider
 from traitlets import link
 import shapely.geometry
-import requests
 import os
-from tqdm import tqdm
-import zipfile
 import xarray_leaflet
 from xarray_leaflet.transform import passthrough
 import matplotlib.pyplot as plt
@@ -32,7 +33,6 @@ from bqplot import Lines, Figure, LinearScale, DateScale, Axis, Scatter
 import bqplot.pyplot as bqplt
 from datetime import datetime
 import json
-from openeo.processes import if_, neq,array_element
 import hvplot.xarray
 import warnings
 warnings.filterwarnings("ignore")
@@ -85,22 +85,34 @@ class openeoMap:
            
 def addLayer(inMap,path,name,clip=[0,0.8],bands=None):
     #Check the filetype: netcdf or geotiff
-    if path.split('.')[-1] == 'nc':
-        da = xr.open_dataset(path)
+    if isinstance(path,str):
+        if path.split('.')[-1] == 'nc':
+            da = xr.open_dataset(path)
+            if 't' in da.dims:
+                da = da.drop('t').squeeze('t').to_array().astype(np.float32)
+            elif 'time' in da.dims:
+                da = da.drop('time').squeeze('time').to_array().astype(np.float32)
+            else:
+                da = da.to_array().astype(np.float32)
+            if 'variable' in da.dims and 'bands' in da.dims:
+                da = da.drop('variable').squeeze('variable').rename({'bands':'variable'})
+        else:
+            da = xr.open_rasterio(path)
+            if 't' in da.dims:
+                da = da.rename({'band':'variable'}).drop('t').squeeze('t').astype(np.float32)
+            else:
+                da = da.rename({'band':'variable'}).astype(np.float32)
+    else:
+        da = path
         if 't' in da.dims:
-            da = da.drop('t').squeeze('t').to_array().astype(np.float32)
+            da = da.max('t').to_array().astype(np.float32)
         elif 'time' in da.dims:
-            da = da.drop('time').squeeze('time').to_array().astype(np.float32)
+            da = da.max('time').to_array().astype(np.float32)
         else:
             da = da.to_array().astype(np.float32)
         if 'variable' in da.dims and 'bands' in da.dims:
             da = da.drop('variable').squeeze('variable').rename({'bands':'variable'})
-    else:
-        da = xr.open_rasterio(path)
-        if 't' in da.dims:
-            da = da.rename({'band':'variable'}).drop('t').squeeze('t').astype(np.float32)
-        else:
-            da = da.rename({'band':'variable'}).astype(np.float32)
+                
     rds4326 = da.rio.reproject("epsg:4326")
     rds4326.name = name
     rds4326 = rds4326.rio.write_crs(4326)  # WGS 84

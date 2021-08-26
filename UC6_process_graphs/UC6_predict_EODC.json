@@ -1,0 +1,470 @@
+{
+  "deprecated": false,
+  "exceptions": {},
+  "experimental": false,
+  "id": "5d0R6EbJYj1kvS2q",
+  "process_graph": {
+    "loadcollection1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "bands": [
+          "B01",
+          "B02",
+          "B03",
+          "B04",
+          "B07"
+        ],
+        "id": "boa_sentinel_2",
+        "spatial_extent": {
+          "east": 11.43804,
+          "north": 46.34833,
+          "south": 46.326286,
+          "west": 11.403012
+        },
+        "temporal_extent": [
+          "2016-09-01",
+          "2018-09-01"
+        ]
+      }
+    },
+    "loadresult1": {
+      "process_id": "load_result",
+      "arguments": {
+        "id": "jb-322b28b2-46cf-4d14-909c-bf575b0a37ef"
+      }
+    },
+    "apply1": {
+      "process_id": "apply",
+      "arguments": {
+        "data": {
+          "from_node": "loadcollection1"
+        },
+        "process": {
+          "process_graph": {
+            "clip1": {
+              "process_id": "clip",
+              "arguments": {
+                "max": 5000,
+                "min": 0,
+                "x": {
+                  "from_parameter": "x"
+                }
+              },
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "apply2": {
+      "process_id": "apply",
+      "arguments": {
+        "data": {
+          "from_node": "loadcollection1"
+        },
+        "process": {
+          "process_graph": {
+            "gt1": {
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "y": 0
+              },
+              "process_id": "gt",
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "dimensionlabels1": {
+      "process_id": "dimension_labels",
+      "arguments": {
+        "data": {
+          "from_node": "apply1"
+        },
+        "dimension": "t"
+      }
+    },
+    "predictcurve1": {
+      "process_id": "predict_curve",
+      "arguments": {
+        "data": {
+          "from_node": "apply1"
+        },
+        "dimension": "t",
+        "function": {
+          "process_graph": {
+            "add1": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement1"
+                },
+                "y": {
+                  "from_node": "multiply2"
+                }
+              },
+              "process_id": "add"
+            },
+            "add2": {
+              "arguments": {
+                "x": {
+                  "from_node": "add1"
+                },
+                "y": {
+                  "from_node": "multiply4"
+                }
+              },
+              "process_id": "add",
+              "result": true
+            },
+            "arrayelement1": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 0
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement2": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 1
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement3": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 2
+              },
+              "process_id": "array_element"
+            },
+            "cos1": {
+              "arguments": {
+                "x": {
+                  "from_node": "multiply1"
+                }
+              },
+              "process_id": "cos"
+            },
+            "multiply1": {
+              "arguments": {
+                "x": 1.991021277657232e-7,
+                "y": {
+                  "from_parameter": "data"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply2": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement2"
+                },
+                "y": {
+                  "from_node": "cos1"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply3": {
+              "arguments": {
+                "x": 1.991021277657232e-7,
+                "y": {
+                  "from_parameter": "data"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply4": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement3"
+                },
+                "y": {
+                  "from_node": "sin1"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "sin1": {
+              "arguments": {
+                "x": {
+                  "from_node": "multiply3"
+                }
+              },
+              "process_id": "sin"
+            }
+          }
+        },
+        "labels": {
+          "from_node": "dimensionlabels1"
+        },
+        "parameters": {
+          "from_node": "loadresult1"
+        }
+      }
+    },
+    "mergecubes1": {
+      "process_id": "merge_cubes",
+      "arguments": {
+        "cube1": {
+          "from_node": "predictcurve1"
+        },
+        "cube2": {
+          "from_node": "apply2"
+        },
+        "overlap_resolver": {
+          "process_graph": {
+            "multiply5": {
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "y": {
+                  "from_parameter": "y"
+                }
+              },
+              "process_id": "multiply",
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "mergecubes2": {
+      "process_id": "merge_cubes",
+      "arguments": {
+        "cube1": {
+          "from_node": "apply1"
+        },
+        "cube2": {
+          "from_node": "mergecubes1"
+        },
+        "overlap_resolver": {
+          "process_graph": {
+            "subtract1": {
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "y": {
+                  "from_parameter": "y"
+                }
+              },
+              "process_id": "subtract",
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "reducedimension1": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "mergecubes2"
+        },
+        "dimension": "bands",
+        "reducer": {
+          "process_graph": {
+            "add3": {
+              "arguments": {
+                "x": {
+                  "from_node": "power1"
+                },
+                "y": {
+                  "from_node": "power2"
+                }
+              },
+              "process_id": "add"
+            },
+            "add4": {
+              "arguments": {
+                "x": {
+                  "from_node": "add3"
+                },
+                "y": {
+                  "from_node": "power3"
+                }
+              },
+              "process_id": "add"
+            },
+            "add5": {
+              "arguments": {
+                "x": {
+                  "from_node": "add4"
+                },
+                "y": {
+                  "from_node": "power4"
+                }
+              },
+              "process_id": "add"
+            },
+            "add6": {
+              "arguments": {
+                "x": {
+                  "from_node": "add5"
+                },
+                "y": {
+                  "from_node": "power5"
+                }
+              },
+              "process_id": "add"
+            },
+            "arrayelement4": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "index": 0
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement5": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "index": 1
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement6": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "index": 2
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement7": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "index": 3
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement8": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "index": 4
+              },
+              "process_id": "array_element"
+            },
+            "divide1": {
+              "arguments": {
+                "x": {
+                  "from_node": "add6"
+                },
+                "y": 5
+              },
+              "process_id": "divide"
+            },
+            "power1": {
+              "arguments": {
+                "base": {
+                  "from_node": "arrayelement4"
+                },
+                "p": 2
+              },
+              "process_id": "power"
+            },
+            "power2": {
+              "arguments": {
+                "base": {
+                  "from_node": "arrayelement5"
+                },
+                "p": 2
+              },
+              "process_id": "power"
+            },
+            "power3": {
+              "arguments": {
+                "base": {
+                  "from_node": "arrayelement6"
+                },
+                "p": 2
+              },
+              "process_id": "power"
+            },
+            "power4": {
+              "arguments": {
+                "base": {
+                  "from_node": "arrayelement7"
+                },
+                "p": 2
+              },
+              "process_id": "power"
+            },
+            "power5": {
+              "arguments": {
+                "base": {
+                  "from_node": "arrayelement8"
+                },
+                "p": 2
+              },
+              "process_id": "power"
+            },
+            "power6": {
+              "arguments": {
+                "base": {
+                  "from_node": "divide1"
+                },
+                "p": 0.5
+              },
+              "process_id": "power",
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "reducedimension2": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "reducedimension1"
+        },
+        "dimension": "t",
+        "reducer": {
+          "process_graph": {
+            "sd1": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                }
+              },
+              "process_id": "sd",
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "saveresult1": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "reducedimension2"
+        },
+        "format": "NetCDF",
+        "options": {}
+      },
+      "result": true
+    }
+  },
+  "parameters": []
+}

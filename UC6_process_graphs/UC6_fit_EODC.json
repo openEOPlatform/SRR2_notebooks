@@ -1,0 +1,191 @@
+{
+  "deprecated": false,
+  "exceptions": {},
+  "experimental": false,
+  "id": "lc2k9tsnwXirUBzB",
+  "process_graph": {
+    "loadcollection1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "bands": [
+          "B01",
+          "B02",
+          "B03",
+          "B04",
+          "B07"
+        ],
+        "id": "boa_sentinel_2",
+        "properties": {},
+        "spatial_extent": {
+          "east": 11.43804,
+          "north": 46.34833,
+          "south": 46.326286,
+          "west": 11.403012
+        },
+        "temporal_extent": [
+          "2016-09-01T00:00:00Z",
+          "2018-09-01T00:00:00Z"
+        ]
+      }
+    },
+    "apply1": {
+      "process_id": "apply",
+      "arguments": {
+        "data": {
+          "from_node": "loadcollection1"
+        },
+        "process": {
+          "process_graph": {
+            "clip1": {
+              "process_id": "clip",
+              "arguments": {
+                "max": 5000,
+                "min": 0,
+                "x": {
+                  "from_parameter": "x"
+                }
+              },
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "fitcurve1": {
+      "process_id": "fit_curve",
+      "arguments": {
+        "data": {
+          "from_node": "apply1"
+        },
+        "dimension": "t",
+        "function": {
+          "process_graph": {
+            "add1": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement1"
+                },
+                "y": {
+                  "from_node": "multiply2"
+                }
+              },
+              "process_id": "add"
+            },
+            "add2": {
+              "arguments": {
+                "x": {
+                  "from_node": "add1"
+                },
+                "y": {
+                  "from_node": "multiply4"
+                }
+              },
+              "process_id": "add",
+              "result": true
+            },
+            "arrayelement1": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 0
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement2": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 1
+              },
+              "process_id": "array_element"
+            },
+            "arrayelement3": {
+              "arguments": {
+                "data": {
+                  "from_parameter": "parameters"
+                },
+                "index": 2
+              },
+              "process_id": "array_element"
+            },
+            "cos1": {
+              "arguments": {
+                "x": {
+                  "from_node": "multiply1"
+                }
+              },
+              "process_id": "cos"
+            },
+            "multiply1": {
+              "arguments": {
+                "x": 1.991021277657232e-7,
+                "y": {
+                  "from_parameter": "data"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply2": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement2"
+                },
+                "y": {
+                  "from_node": "cos1"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply3": {
+              "arguments": {
+                "x": 1.991021277657232e-7,
+                "y": {
+                  "from_parameter": "data"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "multiply4": {
+              "arguments": {
+                "x": {
+                  "from_node": "arrayelement3"
+                },
+                "y": {
+                  "from_node": "sin1"
+                }
+              },
+              "process_id": "multiply"
+            },
+            "sin1": {
+              "arguments": {
+                "x": {
+                  "from_node": "multiply3"
+                }
+              },
+              "process_id": "sin"
+            }
+          }
+        },
+        "parameters": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    "saveresult1": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "fitcurve1"
+        },
+        "format": "NetCDF",
+        "options": {}
+      },
+      "result": true
+    }
+  },
+  "parameters": []
+}
