@@ -4,7 +4,7 @@ Module for calculating a list of vegetation indices from a datacube containing b
 
 from openeo import Connection
 from openeo.rest.datacube import DataCube
-from openeo.processes import ProcessBuilder, array_modify, array_concat, array_apply, power, sqrt, clip, if_, multiply, divide, arccos, linear_scale_range
+from openeo.processes import ProcessBuilder, array_modify, array_concat, array_apply, power, sqrt, clip, if_, multiply, divide, arccos, linear_scale_range, add, subtract
 
 import numpy as np
 import pytest, rasterio
@@ -39,25 +39,28 @@ ndre2 = lambda B06, B08: (B08 - B06) / (B08 + B06)
 ndre5 = lambda B05, B07: (B07 - B05) / (B07 + B05)
 
 indices = {
-    "NDVI": ndvi,
-    "NDMI": ndmi,
-    "NDGI": ndgi,
-    "ANIR": anir,
-    "NDRE1": ndre1,
-    "NDRE2": ndre2,
-    "NDRE5": ndre5
+    "NDVI": [ndvi, (0,1)],
+    "NDMI": [ndmi, (-1,1)],
+    "NDGI": [ndgi, (-1,1)],
+    "ANIR": [anir, (0,1)],
+    "NDRE1": [ndre1, (-1,1)],
+    "NDRE2": [ndre2, (-1,1)],
+    "NDRE5": [ndre5, (-1,1)]
 }
 
 
-def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
+def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int, to_scale=True) -> ProcessBuilder:
     lenx = len(datacube.metadata._band_dimension.bands)
     tot = x
     for idx in index_list:
         if idx not in indices.keys(): raise NotImplementedError("Index " + idx + " has not been implemented.")
         band_indices = [datacube.metadata.get_band_index(band) for band in
-                        indices[idx].__code__.co_varnames[:indices[idx].__code__.co_argcount]]
+                        indices[idx][0].__code__.co_varnames[:indices[idx][0].__code__.co_argcount]]
         lenx += 1
-        tot = array_modify(data=tot, values=scaling_factor*indices[idx](*[tot.array_element(i) for i in band_indices]), index=lenx)
+        if to_scale:
+            tot = array_modify(data=tot, values=lin_scale_range(indices[idx][0](*[tot.array_element(i) for i in band_indices]),*indices[idx][1],0,scaling_factor), index=lenx)
+        else:
+            tot = array_modify(data=tot, values=indices[idx][0](*[tot.array_element(i) for i in band_indices]), index=lenx)
     return tot
 
 
@@ -71,11 +74,12 @@ def compute_indices(datacube: DataCube, index_list: list, scaling_factor: int) -
 
     """
     return datacube.apply_dimension(dimension="bands",
-                                    process=lambda x: _callback(x, index_list, datacube, scaling_factor)).rename_labels('bands',
+                                    process=lambda x: _callback(x, index_list, datacube, scaling_factor, to_scale=False)).rename_labels('bands',
                                                                                                         target=datacube.metadata.band_names + index_list)
 
 
-
+def lin_scale_range(x,inputMin,inputMax,outputMin,outputMax):
+    return add(multiply(divide(subtract(x,inputMin), subtract(inputMax, inputMin)), subtract(outputMax, outputMin)), outputMin)
 
 
 @pytest.mark.parametrize(["index", "bands", "expected"], [
