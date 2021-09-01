@@ -73,7 +73,7 @@ def compute_indices(datacube: DataCube, index_list: list, scaling_factor: int) -
 
     """
     return datacube.apply_dimension(dimension="bands",
-                                    process=lambda x: _callback(x, index_list, datacube, scaling_factor, to_scale=False)).rename_labels('bands',
+                                    process=lambda x: _callback(x, index_list, datacube, scaling_factor)).rename_labels('bands',
                                                                                                         target=datacube.metadata.band_names + index_list)
 
 
