@@ -2,9 +2,8 @@
 Module for calculating a list of vegetation indices from a datacube containing bands without a user having to implement callback functions
 """
 
-from openeo import Connection
 from openeo.rest.datacube import DataCube
-from openeo.processes import ProcessBuilder, array_modify, array_concat, array_apply, power, sqrt, clip, if_, multiply, divide, arccos, linear_scale_range, add, subtract
+from openeo.processes import ProcessBuilder, array_modify, power, sqrt, if_, multiply, divide, arccos, add, subtract
 from shapely.geometry import Point
 import numpy as np
 import netCDF4 as nc
@@ -12,8 +11,6 @@ import glob
 import seaborn as sns
 from matplotlib.dates import DateFormatter
 import geopandas as gpd
-from matplotlib.ticker import FormatStrFormatter
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import earthpy.plot as ep
