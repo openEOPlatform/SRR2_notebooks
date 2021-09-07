@@ -234,8 +234,8 @@ col_palette = ['linen',
     'm',
     'navy']
 
-def plot_croptypes(only_unique_classes=True):
-    with rasterio.open('./data/total.tif',mode="r+",crs=rasterio.crs.CRS({"init": "epsg:4326"})) as dataset:
+def plot_croptypes(fn='./data/total.tif',only_unique_classes=True):
+    with rasterio.open(fn,mode="r+",crs=rasterio.crs.CRS({"init": "epsg:4326"})) as dataset:
         ds = dataset.read(1)
         if only_unique_classes:
             ds = np.where(np.isin(ds, [1,2,4,8,16]), ds, 0)
@@ -256,3 +256,9 @@ def plot_croptypes(only_unique_classes=True):
         ax.set(title="Rule-based crop classification")
         ax.set_axis_off()
         plt.show()
+
+def get_classification_colors():
+    cmap = ListedColormap(col_palette)
+    classification_colors = {x:cmap(x) for x in range(0, len(col_palette))}
+    return classification_colors
+
