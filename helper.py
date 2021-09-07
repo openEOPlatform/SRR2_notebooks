@@ -144,6 +144,7 @@ def _prep_boxplot(year, bands):
                                 "Iteration nr": [f_name]*13, 
                                 "Band value": vals
             }), ignore_index=True)
+    df["Band value"] /= 250
     return df
 
 def create_boxplots(year=2019):
@@ -162,7 +163,7 @@ def create_boxplots(year=2019):
             sns.boxplot(ax=axes[i],data=df_m_n, x="Date",y="Band value")
             axes[i].set_xticklabels(labels=x_dates, rotation=45, ha='right')
             axes[i].title.set_text(str(bands[i])+" per month")
-        #     axes[i].set_ylim(0,1)
+            axes[i].set_ylim(0,1)
         fig.show()
 
 comb = {
