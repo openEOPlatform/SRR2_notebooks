@@ -14262,7 +14262,7 @@ a.anchor-link {
 <p><img src="https://avatars.githubusercontent.com/u/74911464?s=200&v=4"
      alt="OpenEO Platform logo"
      style="float: left; margin-right: 10px;" /></p>
-<h1 id="OpenEO-Platform---UC3">OpenEO Platform - UC3<a class="anchor-link" href="#OpenEO-Platform---UC3">&#182;</a></h1><p>Crop type feature engineering</p>
+<h1 id="OpenEO-Platform---UC3">OpenEO Platform - UC3<a class="anchor-link" href="#OpenEO-Platform---UC3">&#182;</a></h1><p>Rule-based crop classification using S1 and S2</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14313,9 +14313,9 @@ a.anchor-link {
 
 
 
-<div id="7edb24ee-1dc1-4759-a0f2-399c8afba44f" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
+<div id="49cc592e-d40e-4fb8-aa0e-b6218d6e4a91" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
 <script type="text/javascript">
-var element = document.getElementById('7edb24ee-1dc1-4759-a0f2-399c8afba44f');
+var element = document.getElementById('49cc592e-d40e-4fb8-aa0e-b6218d6e4a91');
 
 (function(root) {
   function now() {
@@ -15547,9 +15547,9 @@ var element = document.getElementById('7edb24ee-1dc1-4759-a0f2-399c8afba44f');
 
 
 
-<div id="7edb24ee-1dc1-4759-a0f2-399c8afba44f" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
+<div id="49cc592e-d40e-4fb8-aa0e-b6218d6e4a91" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
 <script type="text/javascript">
-var element = document.getElementById('7edb24ee-1dc1-4759-a0f2-399c8afba44f');
+var element = document.getElementById('49cc592e-d40e-4fb8-aa0e-b6218d6e4a91');
 
 if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
   window.PyViz = {comms: {}, comm_status:{}, kernels:{}, receivers: {}, plot_index: []}
@@ -15815,9 +15815,9 @@ if (window.Jupyter !== undefined) {
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>In this notebook we will perform an easy rule-based classification for 5 crop types.
-First, we will load in the Sentinel-2 data. Then we will calculate the NDVI for a predefined potato field, and have a look at the temporal NDVI profile of different crop types. We will then see how our potato field compares.</p>
-<p>Subsequently, we will have a look at a small dataset of 5 crop types with 10 ground truth samples each. We will sample 300 points per crop type from this dataset. We will load in Sentinel-1 data and make boxplots of the VV/VH ratio as well as the NDVI, a NIR band and a SWIR band for each of these crop types using the point samples. These boxplots will then be used to derive some classification rules manually. Finally, crop classification is done and the results are plotted.</p>
+<h2 id="Objectives-and-approach">Objectives and approach<a class="anchor-link" href="#Objectives-and-approach">&#182;</a></h2><p>The objective of this notebook is to perform an easy rule-based classification for 5 crop types. The notebook has two subsections.</p>
+<p>The first one is oriented towards creating temporal NDVI profiles of different crop types.</p>
+<p>The second one is about the actual rule-based classification. To determine these rules, we use harmonized LPIS data of 5 crop types with 10 ground truth samples each. By point sampling per crop type from this dataset, we can load in the S1- and S2 spectral profiles of each of these crop type and make boxplots of the VV/VH ratio as well as the NDVI, a NIR band and a SWIR band. These boxplots will then be used to derive some classification rules manually. Finally, crop classification is done and the results are plotted.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -15955,7 +15955,7 @@ We will use the scene classification band to perform cloud masking and subsequen
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Next, we create 10-day composites and apply a spatial filter to a potato field that we preselected. We calculate these composites after calculating the NDVI instead of before to avoid computing an NDVI on unobserved band combinations.</p>
+<p>Next, we temporally aggreate to 10-day averages and apply a spatial filter to a potato field that we preselected. We calculate these averages after calculating the NDVI instead of before to avoid computing an NDVI on unobserved band combinations.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -16652,9 +16652,9 @@ From the LPIS data, we selected 10 fields per crop type, and in total we sample 
 
 
 
-<div id="4ae987fb-31e2-4669-8d18-1e47f339c6c7" class="jupyter-widgets jp-OutputArea-output ">
+<div id="816adae9-4d09-42da-a373-589455c37ea9" class="jupyter-widgets jp-OutputArea-output ">
 <script type="text/javascript">
-var element = document.getElementById('4ae987fb-31e2-4669-8d18-1e47f339c6c7');
+var element = document.getElementById('816adae9-4d09-42da-a373-589455c37ea9');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id": "55bb3e8e4cb848a7ba392051d07f0794", "version_major": 2, "version_minor": 0}
