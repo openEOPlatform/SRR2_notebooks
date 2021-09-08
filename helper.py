@@ -164,7 +164,6 @@ def create_boxplots(year=2019):
             axes[i].set_xticklabels(labels=x_dates, rotation=45, ha='right')
             axes[i].title.set_text(str(bands[i])+" per month")
             axes[i].set_ylim(0,1)
-        fig.show()
 
 comb = {
     0: "none",
