@@ -136,7 +136,6 @@ def download_rgb_and_predicted(connection,collection,spatial_extent,temporal_ext
     l2a_median_255_PNG.download(filename)
     
     curve_fitting_loaded = PGNode("load_result", id=jobIdFitting)
-    from change_detection_utils import seasonal_curve_predicting
     curve_prediction = seasonal_curve_predicting(l2a_bands,curve_fitting_loaded)
     l2a_median_pred = curve_prediction.reduce_dimension(dimension="DATE",reducer="median")
     l2a_median_pred_255 = l2a_median_pred.apply(lin_scale)
@@ -153,7 +152,7 @@ def download_S1_raw_and_predicted(connection,collectionId,point_coords,temporal_
     spatial_extent  = {'west':point_coords[0]-0.0001,'east':point_coords[0]+0.0001,'south':point_coords[1]-0.0001,'north':point_coords[1]+0.0001}
     # Load the required S1 band
     collection      = 'SAR2Cube_L0_117_ASC_ST_2016_2020_IFG_LIA_DEM'
-    sar_data = conn.load_collection(collection)
+    sar_data = connection.load_collection(collection)
     intensity_data = sar_data.process("load_result", id=collectionId)
     intensity_data_temp = intensity_data.filter_temporal(temporal_extent)
     intensity_data_bbox = intensity_data_temp.filter_bbox(spatial_extent)
