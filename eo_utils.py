@@ -18,6 +18,8 @@ from ipyleaflet import (
     LayersControl,
     WidgetControl,
     basemaps,
+    basemap_to_tiles,
+    WMSLayer,
     FullScreenControl
 )
 import ipywidgets as widgets
@@ -77,6 +79,7 @@ class openeoMap:
         layers_control = LayersControl(position='topright')
         self.map.add_control(layers_control)
         self.map.add_control(FullScreenControl())
+        self.map.add_layer(basemap_to_tiles(basemaps.Esri.WorldImagery));
         draw.on_draw(handle_draw)
     
     def getBbox(self):
