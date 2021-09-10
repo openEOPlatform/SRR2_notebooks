@@ -36,6 +36,9 @@ import bqplot.pyplot as bqplt
 from datetime import datetime
 import json
 import hvplot.xarray
+import PIL
+from base64 import b64encode
+from io import StringIO, BytesIO
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -85,7 +88,24 @@ class openeoMap:
             return [ mapBox[0][1],mapBox[0][0],mapBox[1][1],mapBox[1][0]]
         else:
             return self.bbox
-           
+
+def addImageLayer(inMap,filename,spatial_extent,name):
+    im = PIL.Image.open(filename)
+    f = BytesIO()
+    im.save(f, 'png')
+    data = b64encode(f.getvalue())
+    data = data.decode('ascii')
+    imgurl = 'data:image/png;base64,' + data
+
+    image = ImageOverlay(
+        url=imgurl,
+        bounds=((spatial_extent['south'], spatial_extent['east']), (spatial_extent['north'], spatial_extent['west'])),
+        name=name
+    )
+    layers_control = LayersControl(position='topright')
+    inMap.map.add_layer(image)
+    return
+        
 def addLayer(inMap,path,name,clip=[0,0.8],bands=None):
     #Check the filetype: netcdf or geotiff
     if isinstance(path,str):
@@ -203,7 +223,7 @@ def addTimeseries(inMap,path,bands,new_plot):
                         inMap.figure = bqplt.figure(title=title,layout={'max_height': '250px', 'width': '600px'})
                         
 
-            scatt = bqplt.scatter(x_data, y_data, labels=[b], display_legend=True, colors=[color[i]], default_size=30, axes_options=axes_options)
+            scatt = bqplt.scatter(x_data, y_data, labels=[b], display_legend=True, colors=[color[i]], default_size=10, axes_options=axes_options)
         
         widget_control = WidgetControl(widget=inMap.figure, position='bottomright')
         if inMap.figure_widget is not None:
