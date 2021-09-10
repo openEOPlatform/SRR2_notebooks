@@ -2,7 +2,7 @@ import openeo
 import geopandas as gpd
 import pandas as pd
 import time
-from helper import compute_indices
+from helper import compute_indices, lin_scale_range
 from openeo.processes import ProcessBuilder, if_
 from openeo.util import deep_get
 
@@ -40,17 +40,23 @@ def sentinel2_stratification(bbox_dict, con=None):
     s2._pg.arguments['featureflags'] = temporal_partition_options
         
     s2_masked = s2.process("mask_scl_dilation", data=s2, scl_band_name="SCL").filter_bands(["B04","B08", "B11"])
-    ndvi_comp = compute_indices(s2_masked, ["NDVI"])
-    ndvi_comp_byte = ndvi_comp.linear_scale_range(1,2000,0,250)
     
-    agg_month = ndvi_comp_byte.aggregate_temporal_period(period="month", reducer="mean")
-    ndvi_month = agg_month.apply_dimension(dimension="t", process="array_interpolate_linear").filter_temporal([str(year)+"-01-01", str(year)+"-12-31"])
-    
+    ndvi = compute_indices(s2_masked,["NDVI"],250).filter_bands(["NDVI"])
+
+    s2_scaled = s2_masked.apply_dimension(dimension="bands",process=lambda x: lin_scale_range(x,0,8000,0,250))
+    ndvi_comp = ndvi.merge_cubes(s2_scaled).rename_labels("bands",ndvi.metadata.band_names + s2_scaled.metadata.band_names)
+
+    ndvi_month = ndvi_comp.aggregate_temporal_period(period="month", reducer="mean")
+    ndvi_month = ndvi_month.apply_dimension(dimension="t", process="array_interpolate_linear").filter_temporal([str(year)+"-01-01", str(year+1)+"-01-01"])
+
+
     all_bands = ndvi_month.apply_dimension(dimension='t', target_dimension='bands', process=lambda x: x*1)
     bandnames2 = [band + "_" + stat for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] for band in all_bands.metadata.band_names]
     bandnames = [band + "_" + stat for band in all_bands.metadata.band_names for stat in ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]]
     all_bands = all_bands.rename_labels('bands', target=bandnames)
 
+
+    ndvi_jan = all_bands.band("NDVI_jan")
     ndvi_apr = all_bands.band("NDVI_apr")
     ndvi_may = all_bands.band("NDVI_may")
     ndvi_jun = all_bands.band("NDVI_jun")
@@ -65,17 +71,17 @@ def sentinel2_stratification(bbox_dict, con=None):
     nir_jun = all_bands.band("B08_jun")
     nir_oct = all_bands.band("B08_oct")
     swir_mar = all_bands.band("B11_mar")
+    swir_apr = all_bands.band("B11_apr")
     swir_may = all_bands.band("B11_may")
     swir_oct = all_bands.band("B11_oct")
 
-    ## Rule for corn is not in line with experiment for 2019, use ndvi_may < ndvi_jun
-    corn = (((ndvi_may < ndvi_jun) + (ndvi_sep > ndvi_nov) + (nir_mar > swir_may) + (swir_mar > nir_may)) == 4)*1
-    barley = (((ndvi_apr < ndvi_may) + (ndvi_jul < ndvi_jun)) == 2)*1 ## barley has very narrow and early NDVI 
-    sugarbeet = (((ndvi_may < 0.6*ndvi_jun) + ((ndvi_jun+ndvi_jul+ndvi_aug+ndvi_sep)/4 > 0.7))==2)*1 #4 month period of high NDVI
-    potato = ((((ndvi_jun/ndvi_may) > 2) + (ndvi_sep < ndvi_jul) + (ndvi_nov > (ndvi_sep + ndvi_oct)/2) + ((swir_may / nir_may) > 0.8) + ((nir_jun / nir_may) > 1.5)) == 5)*1
-    soy = ((((ndvi_may / ndvi_apr) < 1.2) + ((ndvi_may / ndvi_apr) > 0.8) + (ndvi_sep < ndvi_aug) + ((nir_oct / swir_oct) < 1.1)) == 4)*1
+    corn = (((ndvi_may < ndvi_jun) + (ndvi_sep > ndvi_nov) + (((ndvi_jul+ndvi_aug+ndvi_sep)/3) > 175)) == 3)*1
+    barley = (((ndvi_apr < ndvi_may) + ((ndvi_jun / ndvi_jul)>1.4) + (swir_apr > swir_may)) == 2)*1
+    sugarbeet = (((ndvi_may < 0.6*ndvi_jun) + ((ndvi_jun+ndvi_jul+ndvi_aug+ndvi_sep+ndvi_oct)/5 > 175))==2)*1
+    potato = ((((ndvi_jun/ndvi_may) > 2) + (ndvi_sep < ndvi_jul) + (ndvi_jan > ndvi_oct) + ((swir_may / nir_may) > 0.8) + ((nir_jun / nir_may) > 1.4)) == 5)*1
+    soy = (((ndvi_apr > ndvi_may) + (ndvi_sep < ndvi_aug) + ((nir_oct / swir_oct) < 1.1)) == 4)*1
 
-    total = 1*corn + 2*barley + 4*sugarbeet + 8*potato + 16*soy #allow multiple crops to be detected...
+    total = (1*corn + 2*barley + 4*sugarbeet + 8*potato + 16*soy).linear_scale_range(0,32,0,32)
     
     return total
 
@@ -207,10 +213,10 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
             time.sleep(45)
 
 
-year = 2020
+year = 2019
 connection = openeo.connect("https://openeo-dev.vito.be")
 # connection.authenticate_oidc()
-connection.authenticate_basic("driesj","driesj123")
+connection.authenticate_basic("bart","bart123")
 geom = 'UC3_resources/processing_area.geojson'
 csv_path = "./data/uc3_job_status_{}.csv"
 tmp_ext = [str(year-1)+"-11-01", str(year+1)+"-02-01"]
