@@ -113,7 +113,7 @@ def point_sample_fields(crop_samples, nr_iterations):
     return points_per_type
 
 
-def _prep_boxplot(year, bands):
+def prep_boxplot(year, bands):
     df = pd.DataFrame(columns=["Crop type","Date","Band","Iteration nr","Band value"])
     for file in glob.glob('.\\data\\300_*\\*.nc'):
         ds_orig = nc.Dataset(file)
@@ -147,16 +147,17 @@ def _prep_boxplot(year, bands):
     df["Band value"] /= 250
     return df
 
-def create_boxplots(year=2019):
+def create_boxplots(crop_df=None, year=2019):
     bands = ["B08", "B11", "NDVI", "ratio"]
-    df = _prep_boxplot(year, bands)
-    x_dates = df["Date"].dt.strftime("%m-%d-%y").unique()
+    if crop_df is None:
+        crop_df = prep_boxplot(year, bands)
+    x_dates = crop_df["Date"].dt.strftime("%m-%d-%y").unique()
 
-    for crop in set(df["Crop type"]):
+    for crop in set(crop_df["Crop type"]):
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,figsize=(18,18))
         fig.suptitle(crop,y=0.91)
         axes = [ax1, ax2, ax3, ax4]
-        df_m = df[df["Crop type"]==crop]
+        df_m = crop_df[crop_df["Crop type"]==crop]
 
         for i in range(4):
             df_m_n = df_m[df_m["Band"]==bands[i]]

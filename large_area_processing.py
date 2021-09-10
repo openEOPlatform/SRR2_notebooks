@@ -213,7 +213,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
             time.sleep(45)
 
 
-year = 2019
+year = 2020
 connection = openeo.connect("https://openeo-dev.vito.be")
 # connection.authenticate_oidc()
 connection.authenticate_basic("bart","bart123")
