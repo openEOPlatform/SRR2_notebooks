@@ -55,20 +55,37 @@ indices = {
     "NDRE5": [ndre5, (-1,1)]
 }
 
-
 def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
-    lenx = len(datacube.metadata._band_dimension.bands)
-    tot = x
-    for idx in index_list:
-        if idx not in indices.keys(): raise NotImplementedError("Index " + idx + " has not been implemented.")
-        band_indices = [datacube.metadata.get_band_index(band) for band in
-                        indices[idx][0].__code__.co_varnames[:indices[idx][0].__code__.co_argcount]]
-        lenx += 1
-        if scaling_factor == None:
-            tot = array_modify(data=tot, values=indices[idx][0](*[tot.array_element(i) for i in band_indices]), index=lenx)
-        else:
-            tot = array_modify(data=tot, values=lin_scale_range(indices[idx][0](*[tot.array_element(i) for i in band_indices]),*indices[idx][1],0,scaling_factor), index=lenx)
-    return tot
+    index_values = []
+    for index_name in index_list:
+        if index_name not in indices: 
+            raise NotImplementedError("Index " + index_name + " has not been implemented.")
+        index_fun, index_range = indices[index_name]
+        band_indices = [
+            datacube.metadata.get_band_index(band) 
+            for band in index_fun.__code__.co_varnames[:index_fun.__code__.co_argcount]
+        ]
+        
+        index_result = index_fun(*[x.array_element(i) for i in band_indices])
+        if scaling_factor is not None:
+            index_result = lin_scale_range(index_result, *index_range, 0, scaling_factor)
+        index_values.append(index_result)
+    
+    return array_modify(data=x, values=index_values, index=len(datacube.metadata._band_dimension.bands))
+
+# def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
+#     lenx = len(datacube.metadata._band_dimension.bands)
+#     tot = x
+#     for idx in index_list:
+#         if idx not in indices.keys(): raise NotImplementedError("Index " + idx + " has not been implemented.")
+#         band_indices = [datacube.metadata.get_band_index(band) for band in
+#                         indices[idx][0].__code__.co_varnames[:indices[idx][0].__code__.co_argcount]]
+#         lenx += 1
+#         if scaling_factor == None:
+#             tot = array_modify(data=tot, values=[indices[idx][0](*[tot.array_element(i) for i in band_indices])], index=lenx)
+#         else:
+#             tot = array_modify(data=tot, values=[lin_scale_range(indices[idx][0](*[tot.array_element(i) for i in band_indices]),*indices[idx][1],0,scaling_factor)], index=lenx)
+#     return tot
 
 
 def compute_indices(datacube: DataCube, index_list: list, scaling_factor: int = None) -> DataCube:
@@ -117,7 +134,7 @@ def prep_boxplot(year, bands):
     df = pd.DataFrame(columns=["Crop type","Date","Band","Iteration nr","Band value"])
     for file in glob.glob('.\\data\\300_*\\*.nc'):
         ds_orig = nc.Dataset(file)
-        dt_rng = pd.date_range("01-01-"+str(year), "01-01-"+str(year+1),freq="MS")
+        dt_rng = pd.date_range("01-01-"+str(year), "31-12-"+str(year),freq="MS")
         spl = file.split("\\")
         f_name = spl[-1].split(".")[0]
         crop_type = spl[-2].split("_")[-1]
@@ -141,7 +158,7 @@ def prep_boxplot(year, bands):
                                 "Crop type": crop_type,
                                 "Date": dt_rng,
                                 "Band": band,
-                                "Iteration nr": [f_name]*13, 
+                                "Iteration nr": [f_name]*12, 
                                 "Band value": vals
             }), ignore_index=True)
     df["Band value"] /= 250
@@ -262,3 +279,48 @@ def get_classification_colors():
     classification_colors = {x:cmap(x) for x in range(0, len(col_palette))}
     return classification_colors
 
+def get_trained_model():
+    year = 2019
+    bands = ["B08", "B11", "NDVI", "ratio"]
+    df = pd.DataFrame(columns=["Crop type","Date","Iteration nr"]+bands)
+    for file in glob.glob('.\\data\\300_*\\*.nc'):
+        ds_orig = nc.Dataset(file)
+        dt_rng = pd.date_range("01-01-"+str(year), "01-01-"+str(year+1),freq="MS")
+        spl = file.split("\\")
+        f_name = spl[-1].split(".")[0]
+        crop_type = spl[-2].split("_")[-1]
+        df_row = {
+                    "Crop type": crop_type[0:12],
+                    "Date": dt_rng[0:12],
+                    "Iteration nr": [f_name]*12, 
+        }
+        for band in bands:
+            try:
+                ds = ds_orig[band][:]
+            except:
+                print("File "+file+" is corrupt. Please remove it from your folder.")
+            vals = None
+            if ds.shape[1:3] == (1,2):
+                vals = np.mean(ds,axis=2).flatten().tolist()
+            elif ds.shape[1:3] == (2,1):
+                vals = np.mean(ds,axis=1).flatten().tolist()
+            elif ds.shape[1:3] == (1,1):
+                vals = ds.flatten().tolist()
+            elif ds.shape[1:3] == (2,2):
+                vals = np.mean(np.mean(ds,axis=1),axis=1).tolist()
+            else:
+                print(file)
+            df_row[band] = vals[0:12] #[x/250 if x is not None else x for x in vals]
+        df = df.append(pd.DataFrame(df_row), ignore_index=True)
+
+    df = df[pd.notnull(df["B08"])]
+    X = df[["NDVI","B08","B11","ratio"]]
+    y = df["Crop type"]
+    from sklearn.model_selection import train_test_split
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import accuracy_score
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    clf=RandomForestClassifier(n_estimators=100)
+    clf.fit(X_train,y_train)
+    return clf
