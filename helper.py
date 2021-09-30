@@ -57,35 +57,22 @@ indices = {
 
 def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
     index_values = []
+    x_res = x
     for index_name in index_list:
-        if index_name not in indices: 
+        if index_name not in indices:
             raise NotImplementedError("Index " + index_name + " has not been implemented.")
         index_fun, index_range = indices[index_name]
         band_indices = [
             datacube.metadata.get_band_index(band) 
             for band in index_fun.__code__.co_varnames[:index_fun.__code__.co_argcount]
         ]
-        
         index_result = index_fun(*[x.array_element(i) for i in band_indices])
         if scaling_factor is not None:
-            index_result = lin_scale_range(index_result, *index_range, 0, scaling_factor)
+            index_result = index_result.linear_scale_range(*index_range, 0, scaling_factor)
         index_values.append(index_result)
-    
-    return array_modify(data=x, values=index_values, index=len(datacube.metadata._band_dimension.bands))
-
-# def _callback(x: ProcessBuilder, index_list: list, datacube: DataCube, scaling_factor: int) -> ProcessBuilder:
-#     lenx = len(datacube.metadata._band_dimension.bands)
-#     tot = x
-#     for idx in index_list:
-#         if idx not in indices.keys(): raise NotImplementedError("Index " + idx + " has not been implemented.")
-#         band_indices = [datacube.metadata.get_band_index(band) for band in
-#                         indices[idx][0].__code__.co_varnames[:indices[idx][0].__code__.co_argcount]]
-#         lenx += 1
-#         if scaling_factor == None:
-#             tot = array_modify(data=tot, values=[indices[idx][0](*[tot.array_element(i) for i in band_indices])], index=lenx)
-#         else:
-#             tot = array_modify(data=tot, values=[lin_scale_range(indices[idx][0](*[tot.array_element(i) for i in band_indices]),*indices[idx][1],0,scaling_factor)], index=lenx)
-#     return tot
+    if scaling_factor is not None:
+        x_res = x_res.linear_scale_range(0,8000,0,scaling_factor)
+    return array_modify(data=x_res, values=index_values, index=len(datacube.metadata._band_dimension.bands))
 
 
 def compute_indices(datacube: DataCube, index_list: list, scaling_factor: int = None) -> DataCube:
