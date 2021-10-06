@@ -3,7 +3,7 @@ Module for calculating a list of vegetation indices from a datacube containing b
 """
 
 from openeo.rest.datacube import DataCube
-from openeo.processes import ProcessBuilder, array_modify, power, sqrt, if_, multiply, divide, arccos, add, subtract
+from openeo.processes import ProcessBuilder, array_modify, power, sqrt, if_, multiply, divide, arccos, add, subtract, linear_scale_range
 from shapely.geometry import Point
 import numpy as np
 import netCDF4 as nc
@@ -311,3 +311,31 @@ def get_trained_model():
     clf=RandomForestClassifier(n_estimators=100)
     clf.fit(X_train,y_train)
     return clf
+
+
+
+def prep_df(year, bands):
+    df = pd.DataFrame(columns=["Crop type","Iteration nr"]+bands)
+    for file in glob.glob('.\\data\\rf_300_*\\*.nc'):
+        ds_orig = nc.Dataset(file)
+        spl = file.split("\\")
+        f_name = spl[-1].split(".")[0]
+        crop_type = spl[-2].split("_")[-1]
+        df_row = {
+                    "Crop type": [crop_type],
+                    "Iteration nr": [f_name], 
+        }
+        for band in bands:
+            try:
+                ds = ds_orig[band][:]
+            except:
+                print("File "+file+" is corrupt. Please remove it from your folder.")
+            vals = None
+            ds[ds.mask] = np.nan
+            if ds.shape in [(1,2),(2,1),(1,1),(2,2)]:
+                vals = np.mean(ds)
+            else:
+                print(file)
+            df_row[band] = [vals]
+        df = df.append(pd.DataFrame(df_row), ignore_index=True)
+    return df.dropna()
