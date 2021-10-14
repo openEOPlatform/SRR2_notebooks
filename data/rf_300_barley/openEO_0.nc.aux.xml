@@ -1,0 +1,14 @@
+<PAMDataset>
+  <Subdataset name="ANIR_sd">
+    <PAMDataset>
+      <PAMRasterBand band="1">
+        <Metadata>
+          <MDI key="STATISTICS_MAXIMUM">107.18129730225</MDI>
+          <MDI key="STATISTICS_MEAN">105.96306419373</MDI>
+          <MDI key="STATISTICS_MINIMUM">105.51486206055</MDI>
+          <MDI key="STATISTICS_STDDEV">0.70382009604273</MDI>
+        </Metadata>
+      </PAMRasterBand>
+    </PAMDataset>
+  </Subdataset>
+</PAMDataset>

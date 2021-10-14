@@ -33,11 +33,24 @@ import functools
 def load_model():
     return pickle.load(urllib.request.urlopen("https://artifactory.vgt.vito.be:443/auxdata-public/openeo/rf_model_s2only.pkl"))
 
+def impute(a):
+    a[np.isnan(a)] = np.int16(np.nanmean(a))
+    return a
+
 def apply_datacube(cube: XarrayDataCube, context: dict) -> XarrayDataCube:
     array = cube.get_array()
     stacked_array = array.stack(pixel=("x","y"))
     stacked_array = stacked_array.transpose()
-    stacked_array_filtered = stacked_array[~np.isnan(stacked_array).any(axis=1)]
+    stacked_array_f = stacked_array[~np.isnan(stacked_array).all(axis=1)]
+    
+    nr_feats = 10
+    int_ars = []
+    for rng in [range(nr_feats*i,nr_feats*i+nr_feats) for i in range(len(stacked_array_f[0])//nr_feats)]:
+        ar = stacked_array_f[:,rng]
+        np.apply_along_axis(impute, 1, ar)
+        int_ars.append(ar)
+    stacked_array_filtered = np.concatenate(int_ars,axis=1)
+    
     if len(stacked_array_filtered) == 0:
         result = np.full(np.multiply(*array.shape[1:]),np.nan)
     else:
@@ -47,7 +60,7 @@ def apply_datacube(cube: XarrayDataCube, context: dict) -> XarrayDataCube:
         none_indices = np.where(np.amax(probs,axis=1)<0.5)
         pred_array[none_indices] = 99
         result = np.full(len(stacked_array),np.nan)
-        result[~np.isnan(stacked_array).any(axis=1)] = pred_array
+        result[~np.isnan(stacked_array).all(axis=1)] = pred_array
     da = xarray.DataArray(np.transpose(result.reshape(array.shape[1:])),coords=[array.coords["x"],array.coords["y"]], dims=["x","y"])
     return DataCube(da)
 """
@@ -197,9 +210,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
                                 "executor-memory": "3G",
                                 "executor-memoryOverhead": "3G",
                                 "executor-cores": "3",
-                                # "queue": "lowlatency"
                                 "max-executors": "90",
-                                "queue": "archive", ## deze is nieuw!
                             },
                             title="5 countries using S2-only model, tile "+str(pending_jobs[i])+" with bbox "+str(bbox),
                             overviews="ALL",
@@ -231,7 +242,7 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
 
             update_statuses()
             start_jobs(parallel_jobs - len(running_jobs()))
-            # download_results(downloaded_results)
+            download_results(downloaded_results)
             print_errors(printed_errors)
 
             not_finished = len(status_df[status_df["status"] != "finished"])
@@ -248,5 +259,5 @@ def process_area(con=None, area=None, callback=None, tmp_ext=None, folder_path=N
 connection = openeo.connect("https://openeo-dev.vito.be")
 connection.authenticate_oidc()
 geom = 'UC3_resources/processing_area.geojson'
-csv_path = "./data/uc3_job_status_dev{}.csv"
+csv_path = "./data/uc3_job_status.csv"
 process_area(con=connection, area=geom, callback=rf_classification, folder_path="./data/large_areas/", minimum_area=0.7, parallel_jobs=2)
