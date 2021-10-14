@@ -48,7 +48,7 @@ def get_bbox_from_job(job: RESTJob) -> dict:
             spatial_extent = job_descr['process']['process_graph'][n]['arguments']['spatial_extent']
     return spatial_extent
 
-def plot_detected_changes(netcdfPath='result.nc',monthlyAggregate=True,subsequentAlarms=3,backgroundTiles='OSM'):
+def plot_detected_changes(netcdfPath='result.nc',monthlyAggregate=True,subsequentAlarms=3,backgroundTiles='OSM',timeDim='t'):
     import xarray as xr
     import geoviews as gv
     import geoviews.feature as gf
@@ -56,14 +56,12 @@ def plot_detected_changes(netcdfPath='result.nc',monthlyAggregate=True,subsequen
     
     alarms = xr.open_dataarray(netcdfPath)
     ## Apply filtering using rolling window
-    alarms = alarms.rolling(t=subsequentAlarms, center=False).mean().fillna(0)
+    alarms = alarms.rolling(**{timeDim:subsequentAlarms, 'center':False}).mean().fillna(0)
     alarms = alarms.where(alarms>0.9).clip(0,0.5)+0.5
     alarms.name = 'Detected_changes'
-
-    timeDim = 't'
     
     if monthlyAggregate:
-        alarms = alarms.groupby('t.month').max('t')
+        alarms = alarms.groupby(timeDim+'.month').max(timeDim)
         timeDim = 'month'
     
     tiles = gv.tile_sources.OSM
