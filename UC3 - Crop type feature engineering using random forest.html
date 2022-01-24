@@ -14316,9 +14316,9 @@ a.anchor-link {
 
 
 
-<div id="53d937ad-9f38-4d4e-bdfe-c4744247b124" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
+<div id="72dd86d4-c4c3-4ef5-985b-8190eb2d3941" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
 <script type="text/javascript">
-var element = document.getElementById('53d937ad-9f38-4d4e-bdfe-c4744247b124');
+var element = document.getElementById('72dd86d4-c4c3-4ef5-985b-8190eb2d3941');
 
 (function(root) {
   function now() {
@@ -15550,9 +15550,9 @@ var element = document.getElementById('53d937ad-9f38-4d4e-bdfe-c4744247b124');
 
 
 
-<div id="53d937ad-9f38-4d4e-bdfe-c4744247b124" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
+<div id="72dd86d4-c4c3-4ef5-985b-8190eb2d3941" class="jp-RenderedJavaScript jp-OutputArea-output " data-mime-type="application/javascript">
 <script type="text/javascript">
-var element = document.getElementById('53d937ad-9f38-4d4e-bdfe-c4744247b124');
+var element = document.getElementById('72dd86d4-c4c3-4ef5-985b-8190eb2d3941');
 
 if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
   window.PyViz = {comms: {}, comm_status:{}, kernels:{}, receivers: {}, plot_index: []}
@@ -15840,10 +15840,10 @@ if (window.Jupyter !== undefined) {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">openeo</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;https://openeo-dev.vito.be&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">openeo</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;openeo.vito.be&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">authenticate_oidc</span><span class="p">()</span>
 </pre></div>
 
@@ -15864,7 +15864,9 @@ if (window.Jupyter !== undefined) {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Authenticated using refresh token.
+<pre>To authenticate: visit https://aai.egi.eu/oidc/device and enter the user code &#39;hg4qZB&#39;.
+Authorized successfully.
+Authenticated using device code flow.
 </pre>
 </div>
 </div>
@@ -15872,13 +15874,13 @@ if (window.Jupyter !== undefined) {
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 
 
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;Connection to &#39;https://openeo-dev.vito.be/openeo/1.0/&#39; with BearerAuth&gt;</pre>
+<pre>&lt;Connection to &#39;https://openeo.vito.be/openeo/1.0/&#39; with BearerAuth&gt;</pre>
 </div>
 
 </div>
@@ -15896,18 +15898,14 @@ if (window.Jupyter !== undefined) {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">year</span> <span class="o">=</span> <span class="mi">2019</span>
 <span class="n">temp_ext_s2</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-09-01&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-04-30&quot;</span><span class="p">]</span>
 <span class="n">temp_ext_s1</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-01-01&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-12-31&quot;</span><span class="p">]</span>
 
-<span class="n">temporal_partition_options</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;indexreduction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;temporalresolution&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tilesize&quot;</span><span class="p">:</span> <span class="mi">256</span>
-<span class="p">}</span>
+
 <span class="n">job_options</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;driver-memory&quot;</span><span class="p">:</span> <span class="s2">&quot;2G&quot;</span><span class="p">,</span>
         <span class="s2">&quot;driver-memoryOverhead&quot;</span><span class="p">:</span> <span class="s2">&quot;1G&quot;</span><span class="p">,</span>
@@ -15935,13 +15933,12 @@ We will use the scene classification band to perform cloud masking and subsequen
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">s2</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;TERRASCOPE_S2_TOC_V2&quot;</span><span class="p">,</span>
                                 <span class="n">temporal_extent</span><span class="o">=</span><span class="n">temp_ext_s2</span><span class="p">,</span>
                                 <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;B03&quot;</span><span class="p">,</span><span class="s2">&quot;B04&quot;</span><span class="p">,</span><span class="s2">&quot;B05&quot;</span><span class="p">,</span><span class="s2">&quot;B06&quot;</span><span class="p">,</span><span class="s2">&quot;B07&quot;</span><span class="p">,</span><span class="s2">&quot;B08&quot;</span><span class="p">,</span><span class="s2">&quot;B11&quot;</span><span class="p">,</span><span class="s2">&quot;B12&quot;</span><span class="p">,</span><span class="s2">&quot;SCL&quot;</span><span class="p">])</span>
-<span class="n">s2</span><span class="o">.</span><span class="n">_pg</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;featureflags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temporal_partition_options</span>
 <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="s2">&quot;mask_scl_dilation&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">s2</span><span class="p">,</span> <span class="n">scl_band_name</span><span class="o">=</span><span class="s2">&quot;SCL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter_bands</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">band_names</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 
@@ -15953,16 +15950,16 @@ We will use the scene classification band to perform cloud masking and subsequen
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">s1</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;S1_GRD_SIGMA0_ASCENDING&quot;</span><span class="p">,</span>
                                 <span class="n">temporal_extent</span><span class="o">=</span><span class="n">temp_ext_s1</span><span class="p">,</span>
                                 <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;VH&quot;</span><span class="p">,</span><span class="s2">&quot;VV&quot;</span><span class="p">]</span>
                                <span class="p">)</span>
-<span class="n">s1</span><span class="o">.</span><span class="n">_pg</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;featureflags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temporal_partition_options</span>
-
 <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">apply_dimension</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="s2">&quot;bands&quot;</span><span class="p">,</span><span class="n">process</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">array_modify</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">array_element</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">x</span><span class="o">.</span><span class="n">array_element</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">rename_labels</span><span class="p">(</span><span class="s2">&quot;bands&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ratio&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">s1</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">band_names</span><span class="p">)</span>
+<span class="c1">#TODO: this scaling does not seem appropriate for sentinel-1</span>
 <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">apply_dimension</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="s2">&quot;bands&quot;</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lin_scale_range</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
 </pre></div>
 
@@ -15980,14 +15977,14 @@ We will use the scene classification band to perform cloud masking and subsequen
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;TEST_LAYER&quot;</span><span class="p">,</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;ESA_WORLDCOVER_10M_2020_V1&quot;</span><span class="p">,</span>
                                 <span class="n">temporal_extent</span><span class="o">=</span><span class="n">temp_ext_s2</span><span class="p">,</span>
-                                <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Map&quot;</span><span class="p">]</span>
+                                <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MAP&quot;</span><span class="p">]</span>
                     <span class="p">)</span>
-<span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">cropland_mask</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="s2">&quot;Map&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">40</span>
+<span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">cropland_mask</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="s2">&quot;MAP&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">40</span>
 
 <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">cropland_mask</span><span class="o">.</span><span class="n">resample_cube_spatial</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span><span class="o">.</span><span class="n">max_time</span><span class="p">())</span>
 <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">cropland_mask</span><span class="o">.</span><span class="n">resample_cube_spatial</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span><span class="o">.</span><span class="n">max_time</span><span class="p">())</span>
@@ -16061,7 +16058,7 @@ For the final feature selection, the following timeseries should be computed/der
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">idx_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NDVI&quot;</span><span class="p">,</span><span class="s2">&quot;NDMI&quot;</span><span class="p">,</span><span class="s2">&quot;NDGI&quot;</span><span class="p">,</span><span class="s2">&quot;ANIR&quot;</span><span class="p">,</span><span class="s2">&quot;NDRE1&quot;</span><span class="p">,</span><span class="s2">&quot;NDRE2&quot;</span><span class="p">,</span><span class="s2">&quot;NDRE5&quot;</span><span class="p">]</span>
@@ -16093,7 +16090,7 @@ For the final feature selection, the following timeseries should be computed/der
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">computeStats</span><span class="p">(</span><span class="n">input_timeseries</span><span class="p">:</span><span class="n">ProcessBuilder</span><span class="p">):</span>
@@ -16133,7 +16130,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">crops</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;maize&quot;</span><span class="p">:</span><span class="mi">1200</span><span class="p">,</span><span class="s2">&quot;potatos&quot;</span><span class="p">:</span><span class="mi">5100</span><span class="p">,</span><span class="s2">&quot;sugarbeet&quot;</span><span class="p">:</span><span class="mi">8100</span><span class="p">,</span><span class="s2">&quot;barley&quot;</span><span class="p">:</span><span class="mi">1500</span><span class="p">,</span><span class="s2">&quot;soy&quot;</span><span class="p">:</span><span class="mi">4100</span><span class="p">}</span>
@@ -16162,7 +16159,7 @@ in a synchronous call.</p>
         <span class="n">sample_by_feature</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">job_options</span><span class="o">=</span><span class="n">job_options</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">download_files</span><span class="p">(</span><span class="s2">&quot;./data/300_rf_&quot;</span><span class="o">+</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">download_files</span><span class="p">(</span><span class="s2">&quot;./data/rf_300_&quot;</span><span class="o">+</span><span class="n">i</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -16179,7 +16176,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> df = prep_df(2019,all_bands)
@@ -16203,7 +16200,7 @@ in a synchronous call.</p>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Wall time: 2min 58s
+<pre>Wall time: 2min 34s
 </pre>
 </div>
 </div>
@@ -16211,7 +16208,7 @@ in a synchronous call.</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 
 
 
@@ -16399,7 +16396,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">all_bands</span><span class="p">]</span>
@@ -16416,7 +16413,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
@@ -16458,17 +16455,17 @@ in a synchronous call.</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
 
 
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>{&#39;max_depth&#39;: None,
- &#39;max_features&#39;: 4,
+<pre>{&#39;max_depth&#39;: 100,
+ &#39;max_features&#39;: &#39;log2&#39;,
  &#39;min_samples_leaf&#39;: 1,
  &#39;min_samples_split&#39;: 3,
- &#39;n_estimators&#39;: 300}</pre>
+ &#39;n_estimators&#39;: 100}</pre>
 </div>
 
 </div>
@@ -16480,7 +16477,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">gs_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grid_search</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean_test_score&quot;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -16500,7 +16497,7 @@ in a synchronous call.</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
 
 
 
@@ -16543,99 +16540,99 @@ in a synchronous call.</p>
   </thead>
   <tbody>
     <tr>
-      <th>29</th>
-      <td>1.296664</td>
-      <td>0.029303</td>
-      <td>0.074261</td>
-      <td>0.002645</td>
-      <td>None</td>
-      <td>4</td>
+      <th>15</th>
+      <td>0.348849</td>
+      <td>0.003531</td>
+      <td>0.025178</td>
+      <td>0.002903</td>
+      <td>100</td>
+      <td>log2</td>
       <td>1</td>
       <td>3</td>
-      <td>300</td>
-      <td>{'max_depth': None, 'max_features': 4, 'min_sa...</td>
-      <td>0.979167</td>
-      <td>0.982639</td>
-      <td>0.993031</td>
-      <td>0.984946</td>
-      <td>0.005891</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1.077524</td>
-      <td>0.036235</td>
-      <td>0.064315</td>
-      <td>0.003472</td>
       <td>100</td>
-      <td>4</td>
+      <td>{'max_depth': 100, 'max_features': 'log2', 'mi...</td>
+      <td>0.993056</td>
+      <td>0.975694</td>
+      <td>0.968641</td>
+      <td>0.979130</td>
+      <td>0.010259</td>
       <td>1</td>
-      <td>2</td>
-      <td>300</td>
-      <td>{'max_depth': 100, 'max_features': 4, 'min_sam...</td>
-      <td>0.979167</td>
-      <td>0.979167</td>
-      <td>0.989547</td>
-      <td>0.982627</td>
-      <td>0.004893</td>
-      <td>2</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>1.090234</td>
-      <td>0.032697</td>
-      <td>0.067169</td>
-      <td>0.003248</td>
+      <th>1</th>
+      <td>0.691314</td>
+      <td>0.003247</td>
+      <td>0.043802</td>
+      <td>0.001300</td>
       <td>100</td>
-      <td>4</td>
-      <td>1</td>
-      <td>3</td>
-      <td>300</td>
-      <td>{'max_depth': 100, 'max_features': 4, 'min_sam...</td>
-      <td>0.979167</td>
-      <td>0.979167</td>
-      <td>0.989547</td>
-      <td>0.982627</td>
-      <td>0.004893</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>0.827977</td>
-      <td>0.020754</td>
-      <td>0.057214</td>
-      <td>0.003445</td>
-      <td>None</td>
       <td>4</td>
       <td>1</td>
       <td>2</td>
       <td>200</td>
-      <td>{'max_depth': None, 'max_features': 4, 'min_sa...</td>
-      <td>0.975694</td>
+      <td>{'max_depth': 100, 'max_features': 4, 'min_sam...</td>
       <td>0.982639</td>
-      <td>0.989547</td>
-      <td>0.982627</td>
-      <td>0.005655</td>
+      <td>0.975694</td>
+      <td>0.972125</td>
+      <td>0.976820</td>
+      <td>0.004365</td>
       <td>2</td>
     </tr>
     <tr>
-      <th>18</th>
-      <td>0.463061</td>
-      <td>0.010838</td>
-      <td>0.027649</td>
-      <td>0.003238</td>
+      <th>8</th>
+      <td>0.926650</td>
+      <td>0.004729</td>
+      <td>0.060367</td>
+      <td>0.001203</td>
       <td>100</td>
-      <td>log2</td>
+      <td>4</td>
       <td>2</td>
       <td>2</td>
+      <td>300</td>
+      <td>{'max_depth': 100, 'max_features': 4, 'min_sam...</td>
+      <td>0.989583</td>
+      <td>0.975694</td>
+      <td>0.965157</td>
+      <td>0.976812</td>
+      <td>0.010003</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>1.170301</td>
+      <td>0.017374</td>
+      <td>0.076794</td>
+      <td>0.002336</td>
+      <td>None</td>
+      <td>4</td>
+      <td>1</td>
+      <td>3</td>
+      <td>300</td>
+      <td>{'max_depth': None, 'max_features': 4, 'min_sa...</td>
+      <td>0.986111</td>
+      <td>0.982639</td>
+      <td>0.961672</td>
+      <td>0.976807</td>
+      <td>0.010796</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.002288</td>
+      <td>0.026084</td>
+      <td>0.058292</td>
+      <td>0.003380</td>
       <td>100</td>
-      <td>{'max_depth': 100, 'max_features': 'log2', 'mi...</td>
-      <td>0.979167</td>
-      <td>0.979167</td>
-      <td>0.989547</td>
-      <td>0.982627</td>
-      <td>0.004893</td>
+      <td>4</td>
+      <td>1</td>
       <td>2</td>
+      <td>300</td>
+      <td>{'max_depth': 100, 'max_features': 4, 'min_sam...</td>
+      <td>0.989583</td>
+      <td>0.968750</td>
+      <td>0.968641</td>
+      <td>0.975658</td>
+      <td>0.009847</td>
+      <td>5</td>
     </tr>
   </tbody>
 </table>
@@ -16663,7 +16660,7 @@ in a synchronous call.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[18]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
@@ -16687,7 +16684,7 @@ in a synchronous call.</p>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Accuracy on test set: 0.981
+<pre>Accuracy on test set: 0.978
 </pre>
 </div>
 </div>
@@ -16759,9 +16756,9 @@ in a synchronous call.</p>
 
 
 
-<div id="13ba205b-8c5c-4651-b5a2-92d07da68cb4" class="jupyter-widgets jp-OutputArea-output ">
+<div id="88f12a0f-8ed4-41ff-b39e-e647e8634f26" class="jupyter-widgets jp-OutputArea-output ">
 <script type="text/javascript">
-var element = document.getElementById('13ba205b-8c5c-4651-b5a2-92d07da68cb4');
+var element = document.getElementById('88f12a0f-8ed4-41ff-b39e-e647e8634f26');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id": "d9fb90ad1f634d78a9835154256f6d86", "version_major": 2, "version_minor": 0}
@@ -16790,7 +16787,7 @@ var element = document.getElementById('13ba205b-8c5c-4651-b5a2-92d07da68cb4');
     <span class="s2">&quot;SENTINEL2&quot;</span><span class="p">:</span><span class="s2">&quot;TERRASCOPE_S2_TOC_V2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SENTINEL1&quot;</span><span class="p">:</span><span class="s2">&quot;S1_GRD_SIGMA0_ASCENDING&quot;</span><span class="p">,</span>
     <span class="s2">&quot;mask&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;url&quot;</span><span class="p">:</span><span class="s2">&quot;openeo-dev.vito.be&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span><span class="s2">&quot;openeo.cloud&quot;</span><span class="p">,</span>
     <span class="s2">&quot;props&quot;</span><span class="p">:</span> <span class="kc">None</span>
 <span class="p">}</span>
 <span class="n">creo_settings</span> <span class="o">=</span> <span class="p">{</span>
@@ -16899,13 +16896,13 @@ var element = document.getElementById('13ba205b-8c5c-4651-b5a2-92d07da68cb4');
     
     <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">]:</span>
         <span class="c1">### Cropland mask</span>
-        <span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;TEST_LAYER&quot;</span><span class="p">,</span>
+        <span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">load_collection</span><span class="p">(</span><span class="s2">&quot;ESA_WORLDCOVER_10M_2020_V1&quot;</span><span class="p">,</span>
                                         <span class="n">temporal_extent</span><span class="o">=</span><span class="n">temp_ext_s2</span><span class="p">,</span>
                                         <span class="n">spatial_extent</span><span class="o">=</span><span class="n">spat_ext</span><span class="p">,</span>
-                                        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Map&quot;</span><span class="p">]</span>
+                                        <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MAP&quot;</span><span class="p">]</span>
                                         <span class="p">)</span>
         <span class="n">cropland_mask</span><span class="o">.</span><span class="n">_pg</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;featureflags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temporal_partition_options</span>
-        <span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">cropland_mask</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="s2">&quot;Map&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">40</span>
+        <span class="n">cropland_mask</span> <span class="o">=</span> <span class="n">cropland_mask</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="s2">&quot;MAP&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">40</span>
 
         <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">cropland_mask</span><span class="o">.</span><span class="n">resample_cube_spatial</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span><span class="o">.</span><span class="n">max_time</span><span class="p">())</span>
         <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">cropland_mask</span><span class="o">.</span><span class="n">resample_cube_spatial</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span><span class="o">.</span><span class="n">max_time</span><span class="p">())</span>
