@@ -322,8 +322,8 @@ def prep_df(year, bands):
         f_name = spl[-1].split(".")[0]
         crop_type = spl[-2].split("_")[-1]
         df_row = {
-                    "Crop type": [crop_type],
-                    "Iteration nr": [f_name], 
+                    "Crop type": crop_type,
+                    "Iteration nr": f_name,
         }
         for band in bands:
             try:
@@ -336,6 +336,7 @@ def prep_df(year, bands):
                 vals = np.mean(ds)
             else:
                 print(file)
-            df_row[band] = [vals]
-        df = df.append(pd.DataFrame(df_row), ignore_index=True)
+            df_row[band] = vals
+        #df = df.append(pd.DataFrame(df_row), ignore_index=True)  # Deprecated
+        df = pd.concat([df, pd.DataFrame([df_row])], ignore_index=True)
     return df.dropna()
